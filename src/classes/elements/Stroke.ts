@@ -46,10 +46,32 @@ export default class Stroke extends Element {
         vtxArray[lastPointIndex] = pointArray[lastPointIndex];
         vtxArray[lastVtxIndex] = pointArray[0];
 
+        // How a brush behaves along a stroke:
+        // - pressure: the hand presses and eases off, a slow swell along the stroke
+        // - grain: the hairs of the brush, a fine roughness of the edge
+        // - entry: the brush lands a little heavier and tapers out
+        // - lifts (飞白): on long strokes, a place or two where the brush almost leaves the paper
+        const pressureSeed = PRNG.random(0, 10);
+        const grainSeed = PRNG.random(0, 10);
+        const lifts =
+            pointArray.length > 40 && width >= 1.5
+                ? Array.from({ length: Math.floor(PRNG.random(0, 2.99)) }, () =>
+                      PRNG.random(0.2, 0.8)
+                  )
+                : [];
+
         for (let i = 1; i < lastPointIndex; i++) {
-            let newWidth = width * strokeWidthFunction(i / pointArray.length);
-            newWidth *=
-                1 - noise + noise * Perlin.noise(i * 0.5, PRNG.random(0, 10));
+            const t = i / pointArray.length;
+            const pressure = 0.65 + 0.7 * Perlin.noise(i * 0.06, pressureSeed);
+            const grain = 1 - noise + noise * Perlin.noise(i * 0.5, grainSeed);
+            const entry = 1.1 - 0.2 * t;
+
+            let newWidth =
+                width * strokeWidthFunction(t) * pressure * grain * entry;
+
+            for (const lift of lifts) {
+                newWidth *= 1 - 0.85 * Math.exp(-(((t - lift) / 0.025) ** 2));
+            }
 
             const lastAngle = Math.atan2(
                 pointArray[i].y - pointArray[i - 1].y,

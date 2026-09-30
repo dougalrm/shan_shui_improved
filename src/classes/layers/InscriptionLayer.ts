@@ -34,12 +34,14 @@ export default class InscriptionLayer extends Layer {
         let x = xOffset + WIDTH - COLUMN_STEP / 2;
 
         for (const column of columns) {
+            const columnX = x;
+
             Array.from(column).forEach((char, i) => {
                 // A hand isn't a printer: every character sits a little differently
                 this.add(
                     new TextElement(
                         char,
-                        x + PRNG.random(-1, 1),
+                        columnX + PRNG.random(-1, 1),
                         yOffset + CHAR_SIZE / 2 + i * CHAR_STEP + PRNG.random(-1, 1),
                         CHAR_SIZE + PRNG.random(-1.5, 1.5),
                         ink

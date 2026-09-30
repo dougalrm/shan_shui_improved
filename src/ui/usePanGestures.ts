@@ -66,7 +66,7 @@ export const usePanGestures = (
             if (event.pointerId !== pointerId) return;
 
             // Moving the pointer right pulls the picture right, i.e. back towards the start
-            engine.dragTo(startPosition - (event.clientX - startX));
+            engine.dragTo(startPosition - (event.clientX - startX) / engine.scale);
 
             samples.push({ time: event.timeStamp, x: event.clientX });
             while (samples.length > 2 && event.timeStamp - samples[0].time > VELOCITY_WINDOW) {
@@ -86,7 +86,9 @@ export const usePanGestures = (
             // A pointer that stopped before letting go shouldn't fling
             const stillFor = event.timeStamp - last.time;
             const speed =
-                elapsed > 0 && stillFor < 50 ? -(last.x - first.x) / elapsed : 0;
+                elapsed > 0 && stillFor < 50
+                    ? -(last.x - first.x) / elapsed / engine.scale
+                    : 0;
 
             engine.release(event.type === "pointercancel" ? 0 : speed);
         };
@@ -97,9 +99,11 @@ export const usePanGestures = (
                 event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerWidth : 1;
             // The landscape only goes sideways, so vertical wheeling pans too
             const delta =
-                (Math.abs(event.deltaX) > Math.abs(event.deltaY)
+                ((Math.abs(event.deltaX) > Math.abs(event.deltaY)
                     ? event.deltaX
-                    : event.deltaY) * unit;
+                    : event.deltaY) *
+                    unit) /
+                engine.scale;
 
             if (delta === 0) return;
             event.preventDefault();

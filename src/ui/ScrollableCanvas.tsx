@@ -35,13 +35,17 @@ export const ScrollableCanvas = ({
     newPosition,
     engine,
     windowWidth,
+    viewWidth,
+    scale,
     renderer,
     reloadCount,
 }: IScrollableCanvas) => {
     /** Receives drags and wheel movement */
     const canvasRef = useRef<HTMLDivElement>(null);
-    /** Holds one <svg> per layer and is what the engine moves */
+    /** What the engine moves */
     const worldRef = useRef<HTMLDivElement>(null);
+    /** Holds one <svg> per layer */
+    const pictureRef = useRef<HTMLDivElement>(null);
     /** Layer elements currently in the DOM, so only the changes are touched when scrolling */
     const nodesRef = useRef(new Map<string, SVGSVGElement>());
     const reloadRef = useRef(reloadCount);
@@ -66,7 +70,7 @@ export const ScrollableCanvas = ({
         epoch: number,
         shouldStop: () => boolean
     ): Promise<unknown> => {
-        const picture = worldRef.current;
+        const picture = pictureRef.current;
         if (!picture) return Promise.resolve();
 
         const nodes = nodesRef.current;
@@ -170,8 +174,8 @@ export const ScrollableCanvas = ({
         const loaderText = document.getElementById("LoaderText") as HTMLElement;
         // Content is kept ready well ahead of the view, so even fast scrolling never outruns it
         const range = new Range(
-            Math.max(0, newPosition - windowWidth / 2),
-            newPosition + windowWidth * 2
+            Math.max(0, newPosition - viewWidth / 2),
+            newPosition + viewWidth * 2
         );
 
         // A reload throws the old picture away and jumps straight to the new one
@@ -204,12 +208,19 @@ export const ScrollableCanvas = ({
             clearTimeout(loaderTimer);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [renderer, newPosition, windowWidth, reloadCount]);
+    }, [renderer, newPosition, viewWidth, reloadCount]);
 
     return (
         <div id="ScrollableCanvas">
             <div id="Canvas" ref={canvasRef}>
-<div id="World" ref={worldRef} />
+<div id="World" ref={worldRef}>
+                    {/* Scales the painting to the window; the engine moves #World */}
+                    <div
+                        id="Scaled"
+                        ref={pictureRef}
+                        style={{ transform: `scale(${scale})` }}
+                    />
+                </div>
                 {/* The paper texture never moves, so it is painted once on its own layer */}
                 <svg
                     id="Paper"

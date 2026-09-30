@@ -113,6 +113,10 @@ input.InputSeed {
         will-change: transform;
     }
 
+    & #Scaled {
+        transform-origin: 0 0;
+    }
+
     /* One per layer of the picture, stacked in painting order. The size doesn't matter:
        user units are CSS pixels and everything outside the box is still drawn. */
     & svg.Layer {

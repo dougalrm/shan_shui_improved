@@ -36,6 +36,20 @@ export interface IScrollableCanvas {
     windowWidth: number;
 
     /**
+     * How much of the painting (in its own units) fits across the window.
+     *
+     * @type {number}
+     */
+    viewWidth: number;
+
+    /**
+     * Screen pixels per unit of the painting.
+     *
+     * @type {number}
+     */
+    scale: number;
+
+    /**
      * Reference to Renderer.
      *
      * @type {Renderer}

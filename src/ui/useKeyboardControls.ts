@@ -80,7 +80,7 @@ export const useKeyboardControls = ({
                     event.preventDefault();
                     engine.scrollBy(
                         (event.key === "PageUp" ? -1 : 1) *
-                            window.innerWidth *
+                            (window.innerWidth / engine.scale) *
                             PAGE_FRACTION
                     );
                     break;

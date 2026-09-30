@@ -1,4 +1,8 @@
 export const config = {
+    world: {
+        /** The painting is designed for a canvas this tall and scaled to fit the window */
+        height: 900,
+    },
     layers: {
         boat: {
             defaultFlip: false,

@@ -13,10 +13,13 @@ import { SettingPanel } from "./ui/SettingPanel";
 import ScrollEngine from "./classes/ScrollEngine";
 import { Controls } from "./ui/Controls";
 import { Shortcuts } from "./ui/Shortcuts";
+import { config } from "./config";
 import { debounce } from "./utils/utils";
 import { useKeyboardControls } from "./ui/useKeyboardControls";
 
-/** Auto-scroll speeds to pick from (px/s) */
+const WORLD_HEIGHT = config.world.height;
+
+/** Auto-scroll speeds to pick from (world units per second) */
 const SPEEDS = [25, 50, 100, 200, 400];
 /** 100px/s, shown as 1× */
 const DEFAULT_SPEED = 2;
@@ -65,7 +68,7 @@ export const App = (): ReactElement => {
     );
     const [autoLoad, setAutoLoad] = useState<boolean>(false);
     const [saveRange, setSaveRange] = useState<Range>(
-        new Range(0, window.innerWidth)
+        new Range(0, (window.innerWidth * WORLD_HEIGHT) / window.innerHeight)
     );
     const [autoScroll, setAutoScroll] = useState<boolean>(PLAY_ON_LOAD);
     const [speedIndex, setSpeedIndex] = useState(DEFAULT_SPEED);
@@ -75,8 +78,13 @@ export const App = (): ReactElement => {
     const [fullscreen, setFullscreen] = useState(false);
     const [reloadCount, setReloadCount] = useState(0);
 
+    // The painting is scaled to fit the window height. Everything about positions and ranges
+    // is in the painting's own (world) units; `viewWidth` is how much of it fits on screen.
+    const scale = windowHeight / WORLD_HEIGHT;
+    const viewWidth = Math.round(windowWidth / scale);
+
     // Cannot be done via setSeed as it will rerender the scene. Look at Menu.tsx
-    Renderer.forwardCoverage = window.innerWidth / 2;
+    Renderer.forwardCoverage = viewWidth / 2;
 
     // Callback function to handle changes in the save range
     const onChangeSaveRange = (newRange: Range) => {
@@ -92,7 +100,7 @@ export const App = (): ReactElement => {
     // Toggle auto-loading state and set the save range
     const toggleAutoLoad = () => {
         setAutoLoad((current) => !current);
-        setSaveRange(new Range(newPosition, newPosition + windowWidth));
+        setSaveRange(new Range(newPosition, newPosition + viewWidth));
     };
 
     // Perform only on mount
@@ -104,9 +112,6 @@ export const App = (): ReactElement => {
         }, 200);
 
         window.addEventListener("resize", handleResize);
-
-        // Set forwardCoverage
-        Renderer.forwardCoverage = window.innerWidth / 2;
 
         // Popup alert if window is too small
         if (window.innerWidth < 400) {
@@ -144,9 +149,11 @@ export const App = (): ReactElement => {
     // Keep the save range on the current view while auto-load is on
     useEffect(() => {
         if (autoLoad) {
-            setSaveRange(new Range(newPosition, newPosition + windowWidth));
+            setSaveRange(new Range(newPosition, newPosition + viewWidth));
         }
-    }, [autoLoad, newPosition, windowWidth]);
+    }, [autoLoad, newPosition, viewWidth]);
+
+    useEffect(() => engine.setScale(scale), [engine, scale]);
 
     // Auto-scroll drifts at a constant speed
     useEffect(() => {
@@ -240,8 +247,8 @@ export const App = (): ReactElement => {
                 newPosition={newPosition}
                 setNewPosition={jumpTo}
                 renderer={rendererRef.current}
-                windowWidth={windowWidth}
-                windowHeight={windowHeight}
+                windowWidth={viewWidth}
+                windowHeight={WORLD_HEIGHT}
                 saveRange={saveRange}
                 onChangeSaveRange={onChangeSaveRange}
                 toggleAutoLoad={toggleAutoLoad}
@@ -253,6 +260,8 @@ export const App = (): ReactElement => {
                 newPosition={newPosition}
                 engine={engine}
                 windowWidth={windowWidth}
+                viewWidth={viewWidth}
+                scale={scale}
                 renderer={rendererRef.current}
                 reloadCount={reloadCount}
             />

@@ -15,8 +15,6 @@ const EASE_IN_OUT = "cubic-bezier(0.4, 0, 0.2, 1)";
 const DECELERATE = "cubic-bezier(0.333, 0.667, 0.667, 1)";
 const EASE_OUT = "cubic-bezier(0.2, 0, 0, 1)";
 
-const translate = (position: number) => `translate3d(${-position}px,0,0)`;
-
 type Mode = "rest" | "tween" | "drift" | "drag";
 
 /**
@@ -39,6 +37,11 @@ type Mode = "rest" | "tween" | "drift" | "drag";
 export default class ScrollEngine {
     /** Called with a whole-pixel position every `commitDistance` px and when coming to rest */
     onCommit?: (position: number) => void;
+    /**
+     * Screen pixels per world unit. Positions and speeds are all in world units (the painting's
+     * own coordinates); only what is shown on screen is scaled.
+     */
+    scale = 1;
 
     private element?: HTMLElement;
     private animation?: Animation;
@@ -68,13 +71,24 @@ export default class ScrollEngine {
         if (this.mode === "drag") return this.restPosition;
 
         const transform = getComputedStyle(this.element).transform;
-        return transform === "none" ? 0 : -new DOMMatrixReadOnly(transform).m41;
+        return transform === "none"
+            ? 0
+            : -new DOMMatrixReadOnly(transform).m41 / this.scale;
+    }
+
+    /** Change the scale, e.g. when the window is resized. Keeps the same world position. */
+    setScale(scale: number): void {
+        if (scale === this.scale) return;
+
+        const position = this.position;
+        this.scale = scale;
+        this.jumpTo(Math.round(position));
     }
 
     /** Hand over the element that gets scrolled. */
     attach(element: HTMLElement): void {
         this.element = element;
-        element.style.transform = translate(this.restPosition);
+        element.style.transform = this.translate(this.restPosition);
         if (this.drift !== 0) this.driftChanged();
     }
 
@@ -111,7 +125,7 @@ export default class ScrollEngine {
         this.stop();
         this.mode = "drag";
         this.restPosition = position;
-        if (this.element) this.element.style.transform = translate(position);
+        if (this.element) this.element.style.transform = this.translate(position);
     }
 
     /** Move the grabbed picture straight to a position. */
@@ -120,7 +134,7 @@ export default class ScrollEngine {
 
         this.restPosition = Math.max(0, position);
         if (this.element) {
-            this.element.style.transform = translate(this.restPosition);
+            this.element.style.transform = this.translate(this.restPosition);
         }
         this.checkCommit();
     }
@@ -148,7 +162,7 @@ export default class ScrollEngine {
         this.target = end;
         this.mode = "tween";
         this.run(
-            [{ transform: translate(from) }, { transform: translate(end) }],
+            [{ transform: this.translate(from) }, { transform: this.translate(end) }],
             { duration: time * 1000, easing: DECELERATE },
             end
         );
@@ -158,7 +172,7 @@ export default class ScrollEngine {
     jumpTo(position: number): void {
         this.stop();
         this.restPosition = this.committed = position;
-        if (this.element) this.element.style.transform = translate(position);
+        if (this.element) this.element.style.transform = this.translate(position);
         if (this.drift !== 0) this.driftChanged();
     }
 
@@ -180,6 +194,10 @@ export default class ScrollEngine {
         this.onCommit = undefined;
     }
 
+    private translate(position: number): string {
+        return `translate3d(${-position * this.scale}px,0,0)`;
+    }
+
     private get drift(): number {
         return this.autoSpeed + this.heldSpeed;
     }
@@ -199,7 +217,7 @@ export default class ScrollEngine {
         this.mode = "tween";
         this.velocity = 0;
         this.run(
-            [{ transform: translate(from) }, { transform: translate(to) }],
+            [{ transform: this.translate(from) }, { transform: this.translate(to) }],
             { duration, easing },
             to
         );
@@ -229,8 +247,8 @@ export default class ScrollEngine {
             this.velocity = 0;
             this.run(
                 [
-                    { transform: translate(position) },
-                    { transform: translate(end) },
+                    { transform: this.translate(position) },
+                    { transform: this.translate(end) },
                 ],
                 { duration: RAMP_TIME * 1000, easing: DECELERATE },
                 end
@@ -264,18 +282,18 @@ export default class ScrollEngine {
         this.run(
             [
                 {
-                    transform: translate(position),
+                    transform: this.translate(position),
                     offset: 0,
                     easing: `cubic-bezier(0.333, ${startSlope / 3}, 0.667, ${
                         1 - endSlope / 3
                     })`,
                 },
                 {
-                    transform: translate(rampEnd),
+                    transform: this.translate(rampEnd),
                     offset: RAMP_TIME / total,
                     easing: "linear",
                 },
-                { transform: translate(end), offset: 1 },
+                { transform: this.translate(end), offset: 1 },
             ],
             { duration: total * 1000, easing: "linear" },
             end
@@ -296,7 +314,7 @@ export default class ScrollEngine {
 
         const from = this.position;
         this.animation?.cancel();
-        element.style.transform = translate(from);
+        element.style.transform = this.translate(from);
 
         const animation = element.animate(keyframes, {
             ...options,
@@ -316,7 +334,7 @@ export default class ScrollEngine {
     private settle(position: number): void {
         this.stop();
         this.restPosition = this.committed = position;
-        if (this.element) this.element.style.transform = translate(position);
+        if (this.element) this.element.style.transform = this.translate(position);
         this.onCommit?.(Math.round(position));
 
         if (this.drift !== 0) this.driftChanged();

@@ -11,6 +11,8 @@ export default class PRNG {
     /** Making sure that the PRNG is only seeded once while the App is render, as the get seed code is in the main App */
     static alreadyPopulated: boolean = false;
     static _seed: number;
+    /** The value the PRNG was last seeded with, so another PRNG (the generator worker's) can be seeded the same */
+    static rawSeed: string | number = 0;
 
     /**
      * Hashes the input value for use in seeding.
@@ -37,6 +39,8 @@ export default class PRNG {
     static set seed(value: string | number) {
         let newSeed = 0;
         let z = 0;
+
+        this.rawSeed = value;
 
         /**
          * Redo the seeding process if the generated value is not suitable.

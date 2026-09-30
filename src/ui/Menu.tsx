@@ -91,12 +91,8 @@ export const Menu = ({
             // Bring new seed to life
             PRNG.seed = currentDate;
 
-            // Reset the renderer's static properties
-            Renderer.coveredRange = new Range(0, 0);
-            Renderer.visibleRange = new Range(0, 0);
-
-            // Remove old frames
-            renderer.frames = [];
+            // Forget the old picture and start the generator from the new seed
+            renderer.reset();
 
             // Back to the start and let the canvas redraw
             setNewPosition(0);

@@ -1,17 +1,10 @@
-import Designer from "./Designer";
-import Frame from "./Frame";
+import PRNG from "./PRNG";
 import Range from "./Range";
+import { GeneratedFrame, GeneratorRequest } from "../workers/messages";
 import { LayerType } from "../types/LayerType";
 import { config } from "../config";
-import { runWhenIdle } from "../utils/idle";
 
 const TAG_ORDER = config.renderer.tagOrder;
-/** Measured cost (ms) of turning a sketch into a layer. Mountains are the expensive ones */
-const LAYER_COST: Partial<Record<LayerType, number>> = {
-    middleMountain: 12,
-    bottomMountain: 12,
-};
-const DEFAULT_LAYER_COST = 2;
 
 /** A layer that was rendered to an SVG string, identified by a stable key */
 export interface RenderedLayer {
@@ -19,9 +12,23 @@ export interface RenderedLayer {
     svg: string;
 }
 
+/** A finished layer with everything needed to place it and draw it */
+interface PlacedLayer extends RenderedLayer {
+    tag: LayerType;
+    x: number;
+    y: number;
+    range: Range;
+}
+
+/** A finished frame: the layers plus the range they cover together */
+interface PlacedFrame {
+    range: Range;
+    layers: PlacedLayer[];
+}
+
 export default class Renderer {
     /** Keeping the frames array with frames ready to be render in current scenne */
-    frames: Frame[] = [];
+    frames: PlacedFrame[] = [];
     /** Making sure that the new render area is at least 1500px ahead of the current frame range
      * so the user doesn't need to render the scene on every click.
      * This value get populated in App.tsx
@@ -34,6 +41,14 @@ export default class Renderer {
      *  ScrollableCanvas's newPosition parameter
      */
     static visibleRange = new Range(0, 0);
+
+    /** Designs and builds frames off the main thread, created when first needed */
+    private worker?: Worker;
+    /** Frames the worker is still busy with, by frame id */
+    private pending = new Map<
+        number,
+        { resolve: (frame: GeneratedFrame) => void; reject: (e: Error) => void }
+    >();
 
     /** Renders are chained so a slow one can never be overtaken by (or interleave with) a newer one */
     private queue: Promise<unknown> = Promise.resolve();
@@ -113,40 +128,82 @@ export default class Renderer {
             }
         });
 
-        // Render all of the visible layers (each one is rendered only once, see Layer.render)
-        const svgs = await Promise.all(
-            visibleLayers.map(({ layer, frameNum, layerNum }) =>
-                layer.render(frameNum, layerNum)
-            )
-        );
-
-        return visibleLayers.map(({ frameNum, layerNum }, i) => ({
-            key: `frame${frameNum}-layer${layerNum}`,
-            svg: svgs[i],
+        return visibleLayers.map(({ layer }) => ({
+            key: layer.key,
+            svg: layer.svg,
         }));
     }
 
     /**
-     * Design and create new frame within given range
+     * Forget the current picture and start over with PRNG's current seed.
+     * Waits for renders already under way, so none of them sees a half-reset state.
+     */
+    public reset(): void {
+        this.queue = this.queue
+            .catch(() => undefined)
+            .then(() => {
+                this.frames = [];
+                Renderer.coveredRange = new Range(0, 0);
+                Renderer.visibleRange = new Range(0, 0);
+                this.send({ type: "seed", seed: PRNG.rawSeed });
+            });
+    }
+
+    private send(request: GeneratorRequest): void {
+        if (!this.worker) {
+            const worker = new Worker(
+                new URL("../workers/generator.worker.ts", import.meta.url)
+            );
+
+            worker.onmessage = ({ data }: MessageEvent<GeneratedFrame>) => {
+                this.pending.get(data.id)?.resolve(data);
+                this.pending.delete(data.id);
+            };
+            worker.onerror = (event) => {
+                const error = new Error(`Generator failed: ${event.message}`);
+                this.pending.forEach(({ reject }) => reject(error));
+                this.pending.clear();
+            };
+
+            this.worker = worker;
+            worker.postMessage({ type: "seed", seed: PRNG.rawSeed });
+        }
+        this.worker.postMessage(request);
+    }
+
+    /**
+     * Design and create new frame within given range. The work is done by the worker.
      * @private
      * @param {Range} range - Designer's range
-     * @returns {Promise<Frame>} newly created frame as a promise
+     * @returns {Promise<PlacedFrame>} newly created frame as a promise
      */
-    private async createNewFrame(range: Range): Promise<Frame> {
-        const frameID = this.frames.length + 1;
-        const framePlan = new Designer(range).plan;
-        const newFrame = new Frame(frameID);
+    private async createNewFrame(range: Range): Promise<PlacedFrame> {
+        const id = this.frames.length + 1;
+        const generated = await new Promise<GeneratedFrame>(
+            (resolve, reject) => {
+                this.pending.set(id, { resolve, reject });
+                this.send({ type: "frame", id, start: range.start, end: range.end });
+            }
+        );
 
-        // Build the layers one by one in spare time so scrolling isn't interrupted.
-        // The order is kept, so the picture stays the same for the same seed.
-        for (const sketch of framePlan) {
-            await runWhenIdle(
-                () => newFrame.sketchToLayer(sketch),
-                LAYER_COST[sketch.tag] ?? DEFAULT_LAYER_COST
-            );
-        }
+        const frameRange = new Range(Infinity, -Infinity);
+        const layers = generated.layers.map((layer, layerNum) => {
+            const key = `frame${id - 1}-layer${layerNum}`;
 
-        return newFrame;
+            frameRange.start = Math.min(frameRange.start, layer.start);
+            frameRange.end = Math.max(frameRange.end, layer.end);
+
+            return {
+                key,
+                tag: layer.tag,
+                x: layer.x,
+                y: layer.y,
+                range: new Range(layer.start, layer.end),
+                svg: `<g id="${key}-${layer.tag}">${layer.svg}</g>`,
+            };
+        });
+
+        return { range: frameRange, layers };
     }
 
     /**

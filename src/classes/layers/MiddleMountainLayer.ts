@@ -15,6 +15,7 @@ import Tree01 from "../structures/Tree01";
 import Tree02 from "../structures/Tree02";
 import Tree03 from "../structures/Tree03";
 import Tower from "../structures/Tower";
+import Waterfall from "../structures/Waterfall";
 import { config } from "../../config";
 import { distance } from "../../utils/polytools";
 import { generateVegetate } from "../../utils/generateVegetate";
@@ -35,6 +36,7 @@ const RIM_CLUSTERS = config.layers.middleMountain.rim.clusters;
 const RIM_COLORNOALFA = config.layers.middleMountain.rim.colorNoAlfa;
 const TEXTURE_SIZE = config.layers.middleMountain.texture.size;
 const TOP_COLORNOALFA = config.layers.middleMountain.top.colorNoAlfa;
+const HOST_PEAK_HEIGHT_MIN = config.designer.hostPeak.height.min;
 
 /**
  * Represents a mountainous landscape with various elements.
@@ -334,6 +336,29 @@ export default class MiddleMountainLayer extends Layer {
             () => true,
             this
         );
+
+        // WATERFALL down the face: nearly always on a host peak, now and then elsewhere
+        const isHostPeak = height >= HOST_PEAK_HEIGHT_MIN;
+        if (
+            height > 250 &&
+            PRNG.random() < (isHostPeak ? 0.85 : 0.12)
+        ) {
+            // Spilling from just below the skyline
+            const ring = elementArray[0];
+            const j = Math.floor(
+                elementDetails / 2 + PRNG.random(-elementDetails / 6, elementDetails / 6)
+            );
+            const source = ring[j];
+
+            this.add(
+                new Waterfall(
+                    source.x + xOffset,
+                    source.y + yOffset + height * 0.12,
+                    yOffset + 30,
+                    PRNG.random(9, 14) * (isHostPeak ? 1.4 : 1)
+                )
+            );
+        }
 
         // MIST over the foot, so the mountain rises out of it and stands apart from the
         // ones in front (which are drawn later, over this mist). The gradient is an ellipse

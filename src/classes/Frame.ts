@@ -8,6 +8,7 @@ import Range from "./Range";
 import SketchLayer from "./SketchLayer";
 import WaterLayer from "./layers/WaterLayer";
 import InscriptionLayer from "./layers/InscriptionLayer";
+import BirdsLayer from "./layers/BirdsLayer";
 import { withInkStrength } from "../utils/ink";
 
 /**
@@ -66,6 +67,9 @@ export default class Frame {
         }
         if (tag === "inscription") {
             layer = new InscriptionLayer(x, y);
+        }
+        if (tag === "birds") {
+            layer = new BirdsLayer(x, y);
         }
         if (tag === "boat") {
             const flip = PRNG.randomChoice([true, false]);

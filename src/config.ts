@@ -37,6 +37,8 @@ export const config = {
         bottomMountain: {
             defaultSeed: 0,
             defaultFlatness: 0.5,
+            /** Chance of a traveller walking across the top */
+            travellerChance: 0.3,
             background: {
                 fillColor: "rgba(255, 255, 255, 1)",
                 color: "none",
@@ -92,6 +94,11 @@ export const config = {
                 colorNoAlfa: "rgba(100, 100, 100,",
             },
         },
+        birds: {
+            /** Width of a flock */
+            width: 160,
+            height: 60,
+        },
         inscription: {
             /** Width of the space an inscription takes: four poem columns and the signature */
             width: 170,
@@ -133,6 +140,7 @@ export const config = {
             middleMountain: 4,
             bottomMountain: 5,
             inscription: 6,
+            birds: 7,
         },
     },
     designer: {
@@ -141,6 +149,12 @@ export const config = {
         intensity: {
             /** How quickly the landscape moves between quiet stretches and massifs (per unit) */
             frequency: 0.0004,
+        },
+        birds: {
+            /** Chance that a chunk has a flock of geese somewhere in its sky */
+            chance: 0.3,
+            /** Highest and lowest the flock flies */
+            y: { min: 70, max: 190 },
         },
         inscription: {
             /** How strongly a chunk has to stand out to get one (noise, 0-1, see Designer.wantsInscription) */

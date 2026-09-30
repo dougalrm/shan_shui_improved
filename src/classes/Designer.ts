@@ -48,6 +48,11 @@ const HOST_PEAK_SPACING = config.designer.hostPeak.spacing;
 const INSCRIPTION_THRESHOLD = config.designer.inscription.threshold;
 const INSCRIPTION_Y = config.designer.inscription.y;
 const CHUNK_WIDTH = config.world.chunkWidth;
+const BIRDS_CHANCE = config.designer.birds.chance;
+const BIRDS_Y_MIN = config.designer.birds.y.min;
+const BIRDS_Y_MAX = config.designer.birds.y.max;
+const BIRDS_WIDTH = config.layers.birds.width;
+const BIRDS_HEIGHT = config.layers.birds.height;
 const INSCRIPTION_MARGIN = config.designer.inscription.margin;
 const INSCRIPTION_WIDTH = config.layers.inscription.width;
 const INSCRIPTION_HEIGHT = config.layers.inscription.height;
@@ -110,19 +115,28 @@ export default class Designer {
     }
 
     /**
-     * Whether there is open sky for an inscription: no mountain behind it (taking their real
-     * shape: they rise up from their base). The pale distant mountains may show through, as
-     * they often do behind inscriptions on real paintings.
-     * @param {SketchLayer} inscription - Where the inscription would go
+     * Whether there is open sky for an inscription or a flock of birds: no mountain behind it
+     * (taking their real shape: they rise up from their base) and no inscription. The pale
+     * distant mountains may show through, as they often do behind inscriptions on real paintings.
+     * @param {SketchLayer} area - Where it would go
      * @returns {boolean} true if it can go there
      */
-    private isSkyClear(inscription: SketchLayer): boolean {
-        const left = inscription.x - INSCRIPTION_MARGIN;
-        const right = inscription.x + inscription.width + INSCRIPTION_MARGIN;
-        const bottom = inscription.y + inscription.height + INSCRIPTION_MARGIN;
+    private isSkyClear(area: SketchLayer): boolean {
+        const left = area.x - INSCRIPTION_MARGIN;
+        const right = area.x + area.width + INSCRIPTION_MARGIN;
+        const bottom = area.y + area.height + INSCRIPTION_MARGIN;
         const all = [...this.neighbours, ...this.plan, ...this.rightNeighbours];
 
         return all.every((layer) => {
+            // Keep clear of inscriptions too
+            if (layer.tag === "inscription" && layer !== area) {
+                return (
+                    layer.x + layer.width < left ||
+                    layer.x > right ||
+                    layer.y > bottom ||
+                    layer.y + layer.height < area.y - INSCRIPTION_MARGIN
+                );
+            }
             if (
                 layer.tag !== "middleMountain" &&
                 layer.tag !== "bottomMountain"
@@ -394,6 +408,22 @@ export default class Designer {
 
                 if (this.isSkyClear(inscription)) {
                     this.plan.push(inscription);
+                    break;
+                }
+            }
+        }
+
+        // Now and then a flock of geese crossing the open sky
+        if (PRNG.random() < BIRDS_CHANCE) {
+            const start = PRNG.random(0, range.length);
+            const y = PRNG.random(BIRDS_Y_MIN, BIRDS_Y_MAX);
+
+            for (let step = 0; step < range.length; step += 50) {
+                const x = range.start + ((start + step) % range.length);
+                const flock = new SketchLayer("birds", x, y, BIRDS_WIDTH, BIRDS_HEIGHT);
+
+                if (this.isSkyClear(flock)) {
+                    this.plan.push(flock);
                     break;
                 }
             }

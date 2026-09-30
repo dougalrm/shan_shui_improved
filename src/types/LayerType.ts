@@ -8,4 +8,5 @@ export type LayerType =
     | "backgroundMountain"
     | "boat"
     | "water"
-    | "inscription";
+    | "inscription"
+    | "birds";

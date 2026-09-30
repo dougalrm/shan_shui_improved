@@ -25,6 +25,7 @@ body.darkmode {
     --silk: #23262d;
     --paper-light: #e4dfd3;
     --seal: #9c3a31;
+    --moon: #eee8d8;
 }
 
 body {
@@ -132,6 +133,17 @@ input.InputSeed {
     & svg#Paper {
         pointer-events: none;
         mix-blend-mode: multiply;
+    }
+
+    /* Only at night */
+    & svg#Moon {
+        display: none;
+    }
+}
+
+body.darkmode #Canvas {
+    & svg#Moon {
+        display: block;
     }
 }
 

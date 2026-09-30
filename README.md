@@ -13,6 +13,8 @@ Discover the beauty of an ever-evolving Chinese landscape art. This project comb
 
 The landscape unrolls on its own. Drag it (or flick it) to look around, or use a trackpad, the mouse wheel or the arrow keys. The bar at the bottom pauses it, changes the speed and goes fullscreen, and the controls fade away while you watch. In the menu section, you can find an option to download the whole or part of your art as an SVG or to share it with your friends.
 
+The painting follows the conventions of Shan Shui (山水) ink landscapes: pure ink tones on silk, mist dissolving the feet of the mountains, paler peaks in the distance, a rhythm of open water and gathering massifs crowned by a host peak, moss dots, waterfalls, travellers, fishing boats and geese, and now and then a classical poem inscribed in the sky with a red seal. Night mode paints it by moonlight. The same `?seed=` always paints the same landscape, on any screen.
+
 | Key | Action |
 | --- | --- |
 | Space | Play / pause |

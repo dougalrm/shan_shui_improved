@@ -214,6 +214,33 @@ export const ScrollableCanvas = ({
     return (
         <div id="ScrollableCanvas">
             <div id="Canvas" ref={canvasRef}>
+                {/* The moon, at night. It stays put in the sky while the landscape passes in
+                    front of it, as a real one would */}
+                <svg
+                    id="Moon"
+                    width={windowWidth}
+                    height={windowHeight}
+                    aria-hidden="true"
+                >
+                    <defs>
+                        <radialGradient id="moonGlow">
+                            <stop offset="0.3" style={{ stopColor: "var(--moon)", stopOpacity: 0.28 }} />
+                            <stop offset="1" style={{ stopColor: "var(--moon)", stopOpacity: 0 }} />
+                        </radialGradient>
+                    </defs>
+                    <circle
+                        cx={windowWidth * 0.78}
+                        cy={windowHeight * 0.16}
+                        r={windowHeight * 0.12}
+                        fill="url(#moonGlow)"
+                    />
+                    <circle
+                        cx={windowWidth * 0.78}
+                        cy={windowHeight * 0.16}
+                        r={windowHeight * 0.032}
+                        style={{ fill: "var(--moon)" }}
+                    />
+                </svg>
 <div id="World" ref={worldRef}>
                     {/* Scales the painting to the window; the engine moves #World */}
                     <div

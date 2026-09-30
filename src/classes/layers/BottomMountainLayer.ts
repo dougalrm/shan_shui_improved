@@ -1,6 +1,7 @@
 import BottomMountainDecoration from "../structures/BottomMountainDecoration";
 import Element from "../Element";
 import Layer from "../Layer";
+import Man from "../structures/Man";
 import MossDots from "../structures/MossDots";
 import PRNG from "../PRNG";
 import Perlin from "../Perlin";
@@ -27,6 +28,7 @@ const STROKE_FILL_COLOR = config.layers.bottomMountain.stroke.fillColor;
 const STROKE_WIDTH = config.layers.bottomMountain.stroke.strokeWidth;
 const TEXTURE_SIZE = config.layers.bottomMountain.texture.size;
 const TEXTURE_WIDTH = config.layers.bottomMountain.texture.width;
+const TRAVELLER_CHANCE = config.layers.bottomMountain.travellerChance;
 
 /**
  * Represents a flat mountain chunk with optional vegetation and textures.
@@ -218,12 +220,25 @@ export default class BottomMountainLayer extends Layer {
             )
         );
 
-        this.add(
-            new BottomMountainDecoration(
-                xOffset,
-                yOffset,
-                calculateBoundingBox(grlist)
-            )
-        );
+        const platform = calculateBoundingBox(grlist);
+
+        this.add(new BottomMountainDecoration(xOffset, yOffset, platform));
+
+        // A TRAVELLER with a staff crossing the platform, sometimes with a young attendant
+        // following behind, as in so many landscapes
+        if (PRNG.random() < TRAVELLER_CHANCE) {
+            const facingRight = PRNG.randomChoice([true, false]);
+            const behind = facingRight ? -1 : 1;
+            const x = xOffset + PRNG.normalizedRandom(platform.xMin, platform.xMax);
+            const y = yOffset + (platform.yMin + platform.yMax) / 2 + 20;
+
+            this.add(new Man(x, y, facingRight, 0.45, undefined, true, 1));
+
+            if (PRNG.random() < 0.5) {
+                this.add(
+                    new Man(x + behind * 20, y + 2, facingRight, 0.33, undefined, false, 0)
+                );
+            }
+        }
     }
 }

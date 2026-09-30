@@ -7,8 +7,27 @@ import { runWhenIdle } from "../utils/idle";
 const SVG_NS = "http://www.w3.org/2000/svg";
 /** Only show the loader if rendering takes longer than this (ms) */
 const LOADER_DELAY = 150;
-/** Roughly how long (ms) it takes to parse and insert one layer */
-const INSERT_COST = 5;
+/** Layers are thousands of elements. They are added a slice at a time, about this many characters each */
+const CHUNK_SIZE = 16000;
+/** Roughly how long (ms) it takes to parse and add one slice of a layer */
+const CHUNK_COST = 1;
+/** Roughly how long (ms) it takes to remove a layer from the page */
+const REMOVE_COST = 3;
+
+/** Split markup that has one element per line into pieces of roughly `size` characters, never cutting an element */
+function* chunkLines(content: string, size: number) {
+    let start = 0;
+
+    while (start < content.length) {
+        let end = Math.min(start + size, content.length);
+        if (end < content.length) {
+            const newline = content.indexOf("\n", end);
+            end = newline === -1 ? content.length : newline + 1;
+        }
+        yield content.slice(start, end);
+        start = end;
+    }
+}
 
 export const ScrollableCanvas = ({
     windowHeight,
@@ -23,69 +42,117 @@ export const ScrollableCanvas = ({
     /** Layer elements currently in the DOM, so only the changes are touched when scrolling */
     const nodesRef = useRef(new Map<string, SVGGElement>());
     const reloadRef = useRef(reloadCount);
+    const syncRef = useRef({ running: false, pending: null as RenderedLayer[] | null });
+    /** Bumped on reload, so a sync that is still under way knows it is for the old picture */
+    const epochRef = useRef(0);
 
-    const applyPosition = (position: number) => {
-        if (worldRef.current) {
-            // Moving a composited layer is free, the paths aren't repainted
-            worldRef.current.style.transform = `translate3d(${-position}px,0,0)`;
-        }
-    };
-
-    // Follow the engine every frame, bypassing React
+    // The engine moves the picture with an animation the browser runs off the main thread
     useLayoutEffect(() => {
-        engine.onFrame = applyPosition;
-        applyPosition(engine.position);
-        return () => {
-            engine.onFrame = undefined;
-        };
+        if (worldRef.current) engine.attach(worldRef.current);
+        return () => engine.detach();
     }, [engine]);
 
-    // Add, remove and reorder only the layers that changed since the last render
-    const syncLayers = async (
+    // Add, remove and reorder only the layers that changed since the last render. Every step is
+    // queued up front as a small job that runs in spare time, so no single frame has to absorb a
+    // whole layer and the scheduler can fit several jobs into one idle period. Jobs run in order.
+    // `shouldStop` is asked before each layer, so a newer request can take over between layers.
+    const syncLayers = (
         layers: RenderedLayer[],
-        isCancelled: () => boolean
-    ) => {
+        epoch: number,
+        shouldStop: () => boolean
+    ): Promise<unknown> => {
         const picture = pictureRef.current;
-        if (!picture) return;
+        if (!picture) return Promise.resolve();
 
         const nodes = nodesRef.current;
         const wanted = new Set(layers.map(({ key }) => key));
+        const jobs: Promise<unknown>[] = [];
+        let aborted = false;
+        /** Where the next layer belongs: the node it has to go in front of */
+        let next: ChildNode | null = null;
+
+        const queue = (job: () => void, cost: number) =>
+            jobs.push(
+                runWhenIdle(() => {
+                    // A reload makes the rest of this plan pointless
+                    if (epoch !== epochRef.current) aborted = true;
+                    if (!aborted) job();
+                }, cost)
+            );
 
         nodes.forEach((node, key) => {
-            if (!wanted.has(key)) {
+            if (wanted.has(key)) return;
+            queue(() => {
                 node.remove();
                 nodes.delete(key);
-            }
+            }, REMOVE_COST);
         });
 
-        let next: ChildNode | null = picture.firstChild;
+        queue(() => {
+            next = picture.firstChild;
+        }, 0);
 
-        for (const { key, svg } of layers) {
+        const place = (key: string, tag: string) => () => {
+            if (shouldStop()) {
+                aborted = true;
+                return;
+            }
             const existing = nodes.get(key);
 
             if (existing) {
                 if (existing === next) {
-                    next = next.nextSibling;
+                    next = existing.nextSibling;
                 } else {
                     picture.insertBefore(existing, next);
                 }
-                continue;
+            } else {
+                // An empty layer goes into its place first, then it is filled slice by slice
+                const created = document.createElementNS(SVG_NS, "g");
+                created.id = `${key}-${tag}`;
+                picture.insertBefore(created, next);
+                nodes.set(key, created);
             }
+        };
 
-            // Parsing a big layer takes a few ms, so do it in spare time between frames
-            const before = next;
-            const added = await runWhenIdle(() => {
-                if (isCancelled()) return false;
-                const parser = document.createElementNS(SVG_NS, "g");
-                parser.innerHTML = svg;
-                const node = parser.firstElementChild as SVGGElement;
-                nodes.set(key, node);
-                picture.insertBefore(node, before);
-                return true;
-            }, INSERT_COST);
+        const fill = (key: string, chunk: string) => () =>
+            nodes.get(key)?.insertAdjacentHTML("beforeend", chunk);
 
-            if (!added) return;
+        for (const { key, tag, content } of layers) {
+            const isNew = !nodes.has(key);
+
+            queue(place(key, tag), CHUNK_COST);
+
+            if (!isNew) continue;
+
+            for (const chunk of chunkLines(content, CHUNK_SIZE)) {
+                queue(fill(key, chunk), CHUNK_COST);
+            }
         }
+
+        return Promise.all(jobs);
+    };
+
+    // Only one sync runs at a time. Requests that arrive meanwhile replace each other, so the
+    // one that finally runs is always the latest
+    const requestSync = (layers: RenderedLayer[]) => {
+        const state = syncRef.current;
+        state.pending = layers;
+        if (state.running) return;
+
+        state.running = true;
+        (async () => {
+            try {
+                while (state.pending) {
+                    const next = state.pending;
+                    state.pending = null;
+                    await syncLayers(next, epochRef.current, () => state.pending !== null);
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                state.running = false;
+            }
+        })();
     };
 
     // Render the visible range plus a margin each side, so scrolling never outruns the content
@@ -102,6 +169,8 @@ export const ScrollableCanvas = ({
         // A reload throws the old picture away and jumps straight to the new one
         if (reloadRef.current !== reloadCount) {
             reloadRef.current = reloadCount;
+            epochRef.current++;
+            syncRef.current.pending = null;
             nodesRef.current.forEach((node) => node.remove());
             nodesRef.current.clear();
         }
@@ -114,7 +183,7 @@ export const ScrollableCanvas = ({
         renderer
             .renderLayers(range)
             .then((layers) => {
-                if (!cancelled) return syncLayers(layers, () => cancelled);
+                if (!cancelled) requestSync(layers);
             })
             .catch(console.error)
             .finally(() => {

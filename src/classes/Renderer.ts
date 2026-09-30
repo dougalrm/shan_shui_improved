@@ -6,15 +6,16 @@ import { config } from "../config";
 
 const TAG_ORDER = config.renderer.tagOrder;
 
-/** A layer that was rendered to an SVG string, identified by a stable key */
+/** A layer that was rendered to SVG markup, identified by a stable key */
 export interface RenderedLayer {
     key: string;
-    svg: string;
+    tag: LayerType;
+    /** The elements of the layer, one per line, without the wrapping <g> */
+    content: string;
 }
 
 /** A finished layer with everything needed to place it and draw it */
 interface PlacedLayer extends RenderedLayer {
-    tag: LayerType;
     x: number;
     y: number;
     range: Range;
@@ -60,7 +61,12 @@ export default class Renderer {
      */
     public async render(range: Range): Promise<string> {
         const layers = await this.renderLayers(range);
-        return layers.map(({ svg }) => svg).join("\n");
+        return layers
+            .map(
+                ({ key, tag, content }) =>
+                    `<g id="${key}-${tag}">${content}</g>`
+            )
+            .join("\n");
     }
 
     /**
@@ -130,7 +136,8 @@ export default class Renderer {
 
         return visibleLayers.map(({ layer }) => ({
             key: layer.key,
-            svg: layer.svg,
+            tag: layer.tag,
+            content: layer.content,
         }));
     }
 
@@ -199,7 +206,7 @@ export default class Renderer {
                 x: layer.x,
                 y: layer.y,
                 range: new Range(layer.start, layer.end),
-                svg: `<g id="${key}-${layer.tag}">${layer.svg}</g>`,
+                content: layer.svg,
             };
         });
 

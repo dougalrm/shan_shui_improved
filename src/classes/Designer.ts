@@ -36,6 +36,15 @@ const RADIUS = config.designer.radius;
 const WATER_HEIGHT = config.designer.water.height;
 const WATER_WIDTH = config.designer.water.width;
 const X_STEP = config.designer.xStep;
+const INTENSITY_FREQUENCY = config.designer.intensity.frequency;
+const HOST_PEAK_INTENSITY = config.designer.hostPeak.intensity;
+const HOST_PEAK_WIDTH_MIN = config.designer.hostPeak.width.min;
+const HOST_PEAK_WIDTH_MAX = config.designer.hostPeak.width.max;
+const HOST_PEAK_HEIGHT_MIN = config.designer.hostPeak.height.min;
+const HOST_PEAK_HEIGHT_MAX = config.designer.hostPeak.height.max;
+const HOST_PEAK_BASE_MIN = config.designer.hostPeak.base.min;
+const HOST_PEAK_BASE_MAX = config.designer.hostPeak.base.max;
+const HOST_PEAK_SPACING = config.designer.hostPeak.spacing;
 
 /**
  * Class for designing new frame. The main reason for this class is to generate new terrain
@@ -46,9 +55,30 @@ export default class Designer {
     /**
      * Generates terrain design.
      * @param {Range} range - range for which to generate design.
+     * @param {SketchLayer[]} [neighbours=[]] - What the chunk next door planned. Nothing here
+     * may collide with it, but it isn't part of this plan.
      */
-    constructor(public range: Range) {
+    constructor(
+        public range: Range,
+        private neighbours: SketchLayer[] = []
+    ) {
         this.generateDesign(range);
+    }
+
+    /**
+     * How built up the landscape is at x, from 0 (open water, a few distant hills) to 1 (a
+     * massif crowned by a host peak). It changes slowly over thousands of units, giving the
+     * scroll its rhythm of quiet stretches and gatherings, like a painted handscroll.
+     * It only depends on x (and the picture's noise), so it is continuous across chunks.
+     * @param {number} x - Position in the world
+     * @returns {number} Intensity between 0 and 1
+     */
+    static intensity(x: number): number {
+        const noise = Perlin.noise(Math.max(0, x) * INTENSITY_FREQUENCY, 11.3);
+        // The noise mostly sits between 0.25 and 0.65: spread that over 0-1, so quiet
+        // stretches are the exception and the busiest parts reach the host peak threshold
+        const value = (noise - 0.25) / 0.35;
+        return Math.min(1, Math.max(0, value));
     }
 
     /**
@@ -66,7 +96,7 @@ export default class Designer {
         yCollisionRadius: number = RADIUS,
         tagArray: Array<LayerType> = []
     ): boolean {
-        const isNotColliding = this.plan.every((layer) => {
+        const isNotColliding = [...this.neighbours, ...this.plan].every((layer) => {
             const isLocal = tagArray.length === 0 && layer.tag === newLayer.tag;
             const isTagged = tagArray.includes(layer.tag);
 
@@ -92,6 +122,7 @@ export default class Designer {
     private generateDesign(range: Range): void {
         const yRange = (x: number) => Perlin.noise(x * 0.01, Math.PI);
         const middleMountainPositions: Array<{ x: number; y: number }> = [];
+        const intensity = Designer.intensity;
 
         // Generate BackgroundMountains
         for (let x = range.start; x < range.end; x += X_STEP) {
@@ -126,17 +157,61 @@ export default class Designer {
             }
         }
 
-        // Generate MiddleMountains
+        // The host peak (主峰): where the landscape is at its most intense, one mountain
+        // towers over the others. It goes in first so the guest peaks arrange around it.
         for (let x = range.start; x < range.end; x += X_STEP) {
-            if (PRNG.random() < MIDDLE_MOUNTAIN_PROBABILITY) {
+            const here = intensity(x);
+            const isSummit =
+                here > HOST_PEAK_INTENSITY &&
+                here >= intensity(x - 150) &&
+                here >= intensity(x + 150);
+
+            if (!isSummit) continue;
+
+            const width = PRNG.random(HOST_PEAK_WIDTH_MIN, HOST_PEAK_WIDTH_MAX);
+            const height = PRNG.random(HOST_PEAK_HEIGHT_MIN, HOST_PEAK_HEIGHT_MAX);
+            const y = PRNG.random(HOST_PEAK_BASE_MIN, HOST_PEAK_BASE_MAX);
+            const hostPeak = new SketchLayer(
+                "middleMountain",
+                x - width / 4,
+                y,
+                width,
+                height
+            );
+
+            // One per massif: keep host peaks (the only mountains this tall) well apart
+            const nearAnotherHost = [...this.neighbours, ...this.plan].some(
+                (layer) =>
+                    layer.tag === "middleMountain" &&
+                    layer.height >= HOST_PEAK_HEIGHT_MIN &&
+                    Math.abs(layer.x - hostPeak.x) < HOST_PEAK_SPACING
+            );
+
+            if (!nearAnotherHost) {
+                this.plan.push(hostPeak);
+                middleMountainPositions.push({ x: hostPeak.x, y });
+            }
+        }
+
+        // Generate MiddleMountains: many where the landscape is intense, few in quiet stretches
+        for (let x = range.start; x < range.end; x += X_STEP) {
+            const here = intensity(x);
+            const chance =
+                MIDDLE_MOUNTAIN_PROBABILITY * (0.15 + 2.2 * Math.pow(here, 1.5));
+
+            if (PRNG.random() < chance) {
                 for (let y = 0; y < yRange(x) * 480; y += 30) {
                     const width = PRNG.random(
                         MIDDLE_MOUNTAIN_WIDTH_MIN,
                         MIDDLE_MOUNTAIN_WIDTH_MAX
                     );
+                    // Taller where the landscape is building up
                     const height = PRNG.random(
                         MIDDLE_MOUNTAIN_HEIGHT_MIN,
-                        MIDDLE_MOUNTAIN_HEIGHT_MAX
+                        MIDDLE_MOUNTAIN_HEIGHT_MIN +
+                            (MIDDLE_MOUNTAIN_HEIGHT_MAX -
+                                MIDDLE_MOUNTAIN_HEIGHT_MIN) *
+                                (0.35 + 0.65 * here)
                     );
 
                     const xOffset =
@@ -176,7 +251,10 @@ export default class Designer {
 
         // Generate BottomMountains
         for (let x = range.start; x < range.end; x += X_STEP) {
-            if (PRNG.random() < BOTTOM_MOUNTAIN_PROBABILITY) {
+            const chance =
+                BOTTOM_MOUNTAIN_PROBABILITY * (0.35 + 1.1 * intensity(x));
+
+            if (PRNG.random() < chance) {
                 for (let j = 0; j < PRNG.random(0, 4); j++) {
                     const xOffset = PRNG.random(
                         BOTTOM_MOUNTAIN_XOFFSET_MIN,
@@ -221,9 +299,11 @@ export default class Designer {
             }
         });
 
-        // Generate Boats
+        // Generate Boats: mostly on the open water of the quiet stretches
         for (let x = range.start; x < range.end; x += X_STEP) {
-            if (PRNG.random() < BOAT_PROBABILITY) {
+            // A few boats, not a fleet: open water is mostly left empty
+            const chance = BOAT_PROBABILITY * (0.1 + 0.4 * (1 - intensity(x)));
+            if (PRNG.random() < chance) {
                 const y = PRNG.random(BOAT_Y_MIN, BOAT_Y_MAX);
                 const boatChunk = new SketchLayer("boat", x, y, BOAT_WIDTH);
 

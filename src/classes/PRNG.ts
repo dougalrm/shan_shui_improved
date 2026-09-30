@@ -20,14 +20,24 @@ export default class PRNG {
      * @returns The hashed value.
      */
     static hash(value: string | number): number {
-        const stringFromValue = JSON.stringify(value);
-        const numberFromString = stringFromValue
-            .split("")
-            .reduce(
-                (acc, char, i) => acc + char.charCodeAt(0) * Math.pow(128, i),
-                0
-            );
-        return numberFromString;
+        // cyrb53: a fast, well mixed 53-bit string hash. The previous hash summed
+        // charCode * 128^i, which loses precision after a few characters and overflows to
+        // Infinity for long seeds, so different seeds could produce the same picture.
+        const text = JSON.stringify(value);
+        let h1 = 0xdeadbeef;
+        let h2 = 0x41c6ce57;
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text.charCodeAt(i);
+            h1 = Math.imul(h1 ^ char, 2654435761);
+            h2 = Math.imul(h2 ^ char, 1597334677);
+        }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+        h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+        h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+
+        return 4294967296 * (2097151 & h2) + (h1 >>> 0);
     }
 
     /**

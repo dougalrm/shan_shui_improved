@@ -4,8 +4,8 @@ import { LayerType } from "../types/LayerType";
 export type GeneratorRequest =
     /** Start over with a new seed, see PRNG.rawSeed */
     | { type: "seed"; seed: string | number }
-    /** Design and build a frame covering the given range */
-    | { type: "frame"; id: number; start: number; end: number };
+    /** Design and build chunk number `index`, see config.world.chunkWidth */
+    | { type: "chunk"; index: number };
 
 /** A finished layer: where it is and its SVG markup */
 export interface GeneratedLayer {
@@ -19,8 +19,9 @@ export interface GeneratedLayer {
     svg: string;
 }
 
-/** The worker's answer to a "frame" request */
+/** The worker's answer to a "chunk" request */
 export interface GeneratedFrame {
+    /** The chunk number */
     id: number;
     layers: GeneratedLayer[];
 }

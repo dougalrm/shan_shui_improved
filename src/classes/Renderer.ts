@@ -6,6 +6,7 @@ import { config } from "../config";
 import { inkStylesheet } from "../utils/ink";
 
 const TAG_ORDER = config.renderer.tagOrder;
+const CHUNK_WIDTH = config.world.chunkWidth;
 
 /** A layer that was rendered to SVG markup, identified by a stable key */
 export interface RenderedLayer {
@@ -29,15 +30,13 @@ interface PlacedFrame {
 }
 
 export default class Renderer {
-    /** Keeping the frames array with frames ready to be render in current scenne */
-    frames: PlacedFrame[] = [];
+    /** The chunks generated so far, by chunk number (see config.world.chunkWidth) */
+    frames = new Map<number, PlacedFrame>();
     /** Making sure that the new render area is at least 1500px ahead of the current frame range
      * so the user doesn't need to render the scene on every click.
      * This value get populated in App.tsx
      */
     static forwardCoverage = 0;
-    /** Keeping the range that was already covered by renderer */
-    static coveredRange = new Range(0, 0);
     /** Keeeping the current visible range so layers not within range can be hidden.
      *  This value is kept so the Frame.ts can use it without relaying on the
      *  ScrollableCanvas's newPosition parameter
@@ -46,7 +45,7 @@ export default class Renderer {
 
     /** Designs and builds frames off the main thread, created when first needed */
     private worker?: Worker;
-    /** Frames the worker is still busy with, by frame id */
+    /** Chunks the worker is still busy with, by chunk number */
     private pending = new Map<
         number,
         { resolve: (frame: GeneratedFrame) => void; reject: (e: Error) => void }
@@ -83,46 +82,31 @@ export default class Renderer {
     }
 
     private async renderRange(range: Range): Promise<RenderedLayer[]> {
-        // Set the new range as a visible range before adjusting it
-        const newRange = new Range(range.start, range.end);
-
         Renderer.visibleRange = range;
 
-        // Check if the rendering of new frame is needed based on already covered range
-        if (!Renderer.coveredRange.contains(range)) {
-            // Trim the newRange so it covers only the uncovered range
-            if (range.start < Renderer.coveredRange.end) {
-                newRange.start = Renderer.coveredRange.end;
+        // Every chunk the range touches, plus one to the left (mountains reach over the
+        // border) and enough ahead that scrolling on doesn't have to wait
+        const first = Math.max(0, Math.floor(range.start / CHUNK_WIDTH) - 1);
+        const last = Math.floor(
+            (range.end + Renderer.forwardCoverage) / CHUNK_WIDTH
+        );
+
+        for (let index = first; index <= last; index++) {
+            if (!this.frames.has(index)) {
+                this.frames.set(index, await this.createChunk(index));
             }
-
-            // Expand the range so the scene it's not render every time when user clicks forward
-            if (range.end >= Renderer.coveredRange.end) {
-                newRange.end += Renderer.forwardCoverage;
-                Renderer.coveredRange.end = newRange.end;
-            }
-
-            // Shound't happen but just in case
-            if (newRange.end < newRange.start)
-                console.error(
-                    "Trimmed range of new frame is invalid as the end is less than the start"
-                );
-
-            const newFrame = await this.createNewFrame(newRange);
-            this.frames.push(newFrame);
         }
 
         // Collect of visible layers
-        const visibleLayers = [];
-        for (let i = 0; i < this.frames.length; i++) {
-            const frame = this.frames[i];
-            if (!Renderer.visibleRange.isShowing(frame.range)) continue;
-            for (let j = 0; j < frame.layers.length; j++) {
-                const layer = frame.layers[j];
+        const visibleLayers: Array<{ layer: PlacedLayer }> = [];
+        this.frames.forEach((frame) => {
+            if (!Renderer.visibleRange.isShowing(frame.range)) return;
+            for (const layer of frame.layers) {
                 if (Renderer.visibleRange.isShowing(layer.range)) {
-                    visibleLayers.push({ layer, frameNum: i, layerNum: j });
+                    visibleLayers.push({ layer });
                 }
             }
-        }
+        });
 
         // Sort them by the tag order so they will be rendered in the right order
         visibleLayers.sort(({ layer: a }, { layer: b }) => {
@@ -150,8 +134,7 @@ export default class Renderer {
         this.queue = this.queue
             .catch(() => undefined)
             .then(() => {
-                this.frames = [];
-                Renderer.coveredRange = new Range(0, 0);
+                this.frames.clear();
                 Renderer.visibleRange = new Range(0, 0);
                 this.send({ type: "seed", seed: PRNG.rawSeed });
             });
@@ -180,23 +163,22 @@ export default class Renderer {
     }
 
     /**
-     * Design and create new frame within given range. The work is done by the worker.
+     * Generate one chunk of the world. The work is done by the worker.
      * @private
-     * @param {Range} range - Designer's range
-     * @returns {Promise<PlacedFrame>} newly created frame as a promise
+     * @param {number} index - The chunk number
+     * @returns {Promise<PlacedFrame>} the chunk as a promise
      */
-    private async createNewFrame(range: Range): Promise<PlacedFrame> {
-        const id = this.frames.length + 1;
+    private async createChunk(index: number): Promise<PlacedFrame> {
         const generated = await new Promise<GeneratedFrame>(
             (resolve, reject) => {
-                this.pending.set(id, { resolve, reject });
-                this.send({ type: "frame", id, start: range.start, end: range.end });
+                this.pending.set(index, { resolve, reject });
+                this.send({ type: "chunk", index });
             }
         );
 
         const frameRange = new Range(Infinity, -Infinity);
         const layers = generated.layers.map((layer, layerNum) => {
-            const key = `frame${id - 1}-layer${layerNum}`;
+            const key = `chunk${index}-layer${layerNum}`;
 
             frameRange.start = Math.min(frameRange.start, layer.start);
             frameRange.end = Math.max(frameRange.end, layer.end);

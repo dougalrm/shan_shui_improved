@@ -2,6 +2,12 @@ export const config = {
     world: {
         /** The painting is designed for a canvas this tall and scaled to fit the window */
         height: 900,
+        /**
+         * The world is designed in chunks this wide. Each is generated from its own seed
+         * (the picture's seed plus the chunk number), so the same seed always gives the same
+         * landscape, whatever the window size or the order things were looked at.
+         */
+        chunkWidth: 1000,
     },
     layers: {
         boat: {
@@ -107,6 +113,20 @@ export const config = {
     designer: {
         radius: 10, // The threshold radius for considering layers to be the same
         xStep: 50, // Step size along the x-axis for generating terrain.
+        intensity: {
+            /** How quickly the landscape moves between quiet stretches and massifs (per unit) */
+            frequency: 0.0004,
+        },
+        hostPeak: {
+            /** Only where the landscape is at least this intense (0-1) */
+            intensity: 0.8,
+            width: { min: 800, max: 1000 },
+            height: { min: 520, max: 620 },
+            /** Where its foot is, from the top */
+            base: { min: 620, max: 680 },
+            /** Minimum gap to another host peak */
+            spacing: 3000,
+        },
         boatY: {
             min: 300,
             max: 690,

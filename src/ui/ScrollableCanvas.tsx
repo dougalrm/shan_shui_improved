@@ -2,12 +2,13 @@ import Range from "../classes/Range";
 import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { IScrollableCanvas } from "../interfaces/IScrollableCanvas";
 import { RenderedLayer } from "../classes/Renderer";
+import { runWhenIdle } from "../utils/idle";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 /** Only show the loader if rendering takes longer than this (ms) */
 const LOADER_DELAY = 150;
-/** Longest (ms) to spend adding layers before giving the animation a chance to draw a frame */
-const INSERT_BUDGET = 4;
+/** Roughly how long (ms) it takes to parse and insert one layer */
+const INSERT_COST = 5;
 
 export const ScrollableCanvas = ({
     windowHeight,
@@ -58,29 +59,32 @@ export const ScrollableCanvas = ({
         });
 
         let next: ChildNode | null = picture.firstChild;
-        let deadline = performance.now() + INSERT_BUDGET;
 
         for (const { key, svg } of layers) {
-            let node = nodes.get(key);
-            if (!node) {
-                const parser = document.createElementNS(SVG_NS, "g");
-                parser.innerHTML = svg;
-                node = parser.firstElementChild as SVGGElement;
-                nodes.set(key, node);
-            }
-            if (node === next) {
-                next = next.nextSibling;
-            } else {
-                picture.insertBefore(node, next);
+            const existing = nodes.get(key);
+
+            if (existing) {
+                if (existing === next) {
+                    next = next.nextSibling;
+                } else {
+                    picture.insertBefore(existing, next);
+                }
+                continue;
             }
 
-            // Parsing big layers all at once would drop frames, so spread it out
-            if (performance.now() > deadline) {
-                await new Promise((resolve) => setTimeout(resolve, 0));
-                if (isCancelled()) return;
-                deadline = performance.now() + INSERT_BUDGET;
-                next = node.nextSibling;
-            }
+            // Parsing a big layer takes a few ms, so do it in spare time between frames
+            const before = next;
+            const added = await runWhenIdle(() => {
+                if (isCancelled()) return false;
+                const parser = document.createElementNS(SVG_NS, "g");
+                parser.innerHTML = svg;
+                const node = parser.firstElementChild as SVGGElement;
+                nodes.set(key, node);
+                picture.insertBefore(node, before);
+                return true;
+            }, INSERT_COST);
+
+            if (!added) return;
         }
     };
 

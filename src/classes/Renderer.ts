@@ -1,9 +1,17 @@
 import Designer from "./Designer";
 import Frame from "./Frame";
 import Range from "./Range";
+import { LayerType } from "../types/LayerType";
 import { config } from "../config";
+import { runWhenIdle } from "../utils/idle";
 
 const TAG_ORDER = config.renderer.tagOrder;
+/** Measured cost (ms) of turning a sketch into a layer. Mountains are the expensive ones */
+const LAYER_COST: Partial<Record<LayerType, number>> = {
+    middleMountain: 12,
+    bottomMountain: 12,
+};
+const DEFAULT_LAYER_COST = 2;
 
 /** A layer that was rendered to an SVG string, identified by a stable key */
 export interface RenderedLayer {
@@ -129,14 +137,14 @@ export default class Renderer {
         const framePlan = new Designer(range).plan;
         const newFrame = new Frame(frameID);
 
-        framePlan.forEach((sketch) => {
-            setTimeout(() => {
-                newFrame.sketchToLayer(sketch);
-            }, 0);
-        });
-
-        // wait for the sketchToLayer to finish
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        // Build the layers one by one in spare time so scrolling isn't interrupted.
+        // The order is kept, so the picture stays the same for the same seed.
+        for (const sketch of framePlan) {
+            await runWhenIdle(
+                () => newFrame.sketchToLayer(sketch),
+                LAYER_COST[sketch.tag] ?? DEFAULT_LAYER_COST
+            );
+        }
 
         return newFrame;
     }

@@ -79,10 +79,20 @@ input.InputSeed {
         top: 0;
     }
 
-    /* Scrolled with a CSS transform on its own layer, see ScrollableCanvas */
-    & svg#SVG {
-        overflow: visible;
+    /* Scrolled with a compositor animation on its own layer, see ScrollEngine */
+    & #World {
+        position: absolute;
+        left: 0;
+        top: 0;
         will-change: transform;
+    }
+
+    /* One per layer of the picture, stacked in painting order. The size doesn't matter:
+       user units are CSS pixels and everything outside the box is still drawn. */
+    & svg.Layer {
+        width: 1px;
+        height: 1px;
+        overflow: visible;
     }
 
     & svg#Paper {

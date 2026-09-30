@@ -30,7 +30,7 @@ export default class ScrollEngine {
     /** Called with a whole-pixel position every `commitDistance` px and when coming to rest */
     onCommit?: (position: number) => void;
 
-    private element?: SVGSVGElement;
+    private element?: HTMLElement;
     private animation?: Animation;
     private mode: Mode = "rest";
     /** Where the running tween is heading, so repeated clicks add up */
@@ -60,7 +60,7 @@ export default class ScrollEngine {
     }
 
     /** Hand over the element that gets scrolled. */
-    attach(element: SVGSVGElement): void {
+    attach(element: HTMLElement): void {
         this.element = element;
         element.style.transform = translate(this.restPosition);
         if (this.drift !== 0) this.driftChanged();

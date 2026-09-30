@@ -37,10 +37,10 @@ export const ScrollableCanvas = ({
     renderer,
     reloadCount,
 }: IScrollableCanvas) => {
-    const worldRef = useRef<SVGSVGElement>(null);
-    const pictureRef = useRef<SVGGElement>(null);
+    /** Holds one <svg> per layer and is what the engine moves */
+    const worldRef = useRef<HTMLDivElement>(null);
     /** Layer elements currently in the DOM, so only the changes are touched when scrolling */
-    const nodesRef = useRef(new Map<string, SVGGElement>());
+    const nodesRef = useRef(new Map<string, SVGSVGElement>());
     const reloadRef = useRef(reloadCount);
     const syncRef = useRef({ running: false, pending: null as RenderedLayer[] | null });
     /** Bumped on reload, so a sync that is still under way knows it is for the old picture */
@@ -61,7 +61,7 @@ export const ScrollableCanvas = ({
         epoch: number,
         shouldStop: () => boolean
     ): Promise<unknown> => {
-        const picture = pictureRef.current;
+        const picture = worldRef.current;
         if (!picture) return Promise.resolve();
 
         const nodes = nodesRef.current;
@@ -107,7 +107,10 @@ export const ScrollableCanvas = ({
                 }
             } else {
                 // An empty layer goes into its place first, then it is filled slice by slice
-                const created = document.createElementNS(SVG_NS, "g");
+                // Each layer is its own <svg>, so Chrome only repaints the layer that changed.
+                // Inside one big <svg> any change repainted every element of the picture.
+                const created = document.createElementNS(SVG_NS, "svg");
+                created.classList.add("Layer");
                 created.id = `${key}-${tag}`;
                 picture.insertBefore(created, next);
                 nodes.set(key, created);
@@ -201,15 +204,7 @@ export const ScrollableCanvas = ({
     return (
         <div id="ScrollableCanvas">
             <div id="Canvas">
-                <svg
-                    id="SVG"
-                    ref={worldRef}
-                    width={windowWidth}
-                    height={windowHeight}
-                    viewBox={`0 0 ${windowWidth} ${windowHeight}`}
-                >
-                    <g id="Picture" ref={pictureRef} />
-                </svg>
+<div id="World" ref={worldRef} />
                 {/* The paper texture never moves, so it is painted once on its own layer */}
                 <svg
                     id="Paper"

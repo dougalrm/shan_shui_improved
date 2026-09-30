@@ -7,9 +7,15 @@ import PRNG from "./PRNG";
 import Range from "./Range";
 import SketchLayer from "./SketchLayer";
 import WaterLayer from "./layers/WaterLayer";
+import PillarLayer from "./layers/PillarLayer";
+import Perlin from "./Perlin";
+import { config } from "../config";
+import { getMountainStyle } from "../utils/style";
 import InscriptionLayer from "./layers/InscriptionLayer";
 import BirdsLayer from "./layers/BirdsLayer";
 import { withInkStrength } from "../utils/ink";
+
+const BLEND_THRESHOLD = config.layers.pillar.blendThreshold;
 
 /**
  * Atmospheric perspective: things further away (higher up the picture) get paler.
@@ -19,6 +25,19 @@ import { withInkStrength } from "../utils/ink";
  */
 const depthStrength = (y: number) =>
     0.5 + 0.5 * Math.min(1, Math.max(0, (y - 400) / 400));
+
+/**
+ * Whether mountains at x are drawn as Zhangjiajie-like pillars, depending on the style
+ * (?style=, see utils/style.ts). In the blend style a slow noise decides, so pillars come in
+ * stretches of country rather than one here and there.
+ * @param {number} x - Position in the world
+ * @returns {boolean} true for pillars, false for classic mountains
+ */
+const isPillarCountry = (x: number): boolean => {
+    const style = getMountainStyle();
+    if (style !== "blend") return style === "pillars";
+    return Perlin.noise(Math.max(0, x) * 0.0006, 57.1) > BLEND_THRESHOLD;
+};
 
 /**
  * Class representing a frame used for generating and managing layer of terrain.
@@ -46,9 +65,10 @@ export default class Frame {
 
         if (tag === "middleMountain") {
             seed = PRNG.random(0, 2 * this.id);
-            layer = withInkStrength(
-                depthStrength(y),
-                () => new MiddleMountainLayer(x, y, seed, width, height)
+            layer = withInkStrength(depthStrength(y), () =>
+                isPillarCountry(x)
+                    ? new PillarLayer(x, y, width, height)
+                    : new MiddleMountainLayer(x, y, seed, width, height)
             );
         }
         if (tag === "water") {
@@ -63,7 +83,14 @@ export default class Frame {
         }
         if (tag === "backgroundMountain") {
             seed = PRNG.random(0, 100);
-            layer = new BackgroundMountainLayer(x, y, seed, width, height);
+            layer = new BackgroundMountainLayer(
+                x,
+                y,
+                seed,
+                width,
+                height,
+                isPillarCountry(x + width / 2)
+            );
         }
         if (tag === "inscription") {
             layer = new InscriptionLayer(x, y);

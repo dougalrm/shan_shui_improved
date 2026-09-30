@@ -15,6 +15,7 @@ import { Controls } from "./ui/Controls";
 import { Shortcuts } from "./ui/Shortcuts";
 import { config } from "./config";
 import { debounce } from "./utils/utils";
+import { pictureUrl, setMountainStyle, styleFromUrl } from "./utils/style";
 import { useKeyboardControls } from "./ui/useKeyboardControls";
 
 const WORLD_HEIGHT = config.world.height;
@@ -39,12 +40,14 @@ export const App = (): ReactElement => {
     const initalSeed = urlSeed || currentDate;
 
     if (!PRNG.alreadyPopulated) {
+        setMountainStyle(styleFromUrl());
+
         if (urlSeed) {
             PRNG.seed = urlSeed;
         } else {
             const state = { info: "Updated URL with new seed" };
             const title = `{Shan, Shui}* - ${currentDate}`;
-            const url = `/?seed=${currentDate}`;
+            const url = pictureUrl(currentDate);
             // Use pushState to add to the history stack
             window.history.pushState(state, title, url);
             // Use replaceState to replace the current history entry

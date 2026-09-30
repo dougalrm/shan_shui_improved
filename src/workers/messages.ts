@@ -1,9 +1,10 @@
 import { LayerType } from "../types/LayerType";
+import { MountainStyle } from "../utils/style";
 
 /** What the main thread can ask the generator worker to do */
 export type GeneratorRequest =
-    /** Start over with a new seed, see PRNG.rawSeed */
-    | { type: "seed"; seed: string | number }
+    /** Start over with a new seed (see PRNG.rawSeed) and mountain style */
+    | { type: "seed"; seed: string | number; style: MountainStyle }
     /** Design and build chunk number `index`, see config.world.chunkWidth */
     | { type: "chunk"; index: number };
 

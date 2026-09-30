@@ -27,7 +27,8 @@ let inkStrength = 1;
  */
 export const withInkStrength = <T>(strength: number, build: () => T): T => {
     const previous = inkStrength;
-    inkStrength = strength;
+    // Multiplies, so it can be nested: e.g. a far pillar inside a far mountain group
+    inkStrength = previous * strength;
     try {
         return build();
     } finally {

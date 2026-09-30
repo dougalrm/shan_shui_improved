@@ -4,6 +4,7 @@ import { GeneratedFrame, GeneratorRequest } from "../workers/messages";
 import { LayerType } from "../types/LayerType";
 import { config } from "../config";
 import { inkDefs, inkStylesheet } from "../utils/ink";
+import { getMountainStyle } from "../utils/style";
 
 const TAG_ORDER = config.renderer.tagOrder;
 const CHUNK_WIDTH = config.world.chunkWidth;
@@ -136,7 +137,11 @@ export default class Renderer {
             .then(() => {
                 this.frames.clear();
                 Renderer.visibleRange = new Range(0, 0);
-                this.send({ type: "seed", seed: PRNG.rawSeed });
+                this.send({
+                    type: "seed",
+                    seed: PRNG.rawSeed,
+                    style: getMountainStyle(),
+                });
             });
     }
 
@@ -157,7 +162,11 @@ export default class Renderer {
             };
 
             this.worker = worker;
-            worker.postMessage({ type: "seed", seed: PRNG.rawSeed });
+            worker.postMessage({
+                type: "seed",
+                seed: PRNG.rawSeed,
+                style: getMountainStyle(),
+            });
         }
         this.worker.postMessage(request);
     }

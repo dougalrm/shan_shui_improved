@@ -7,6 +7,7 @@ Everything changed since this fork was taken from upstream [Megaemce/shan_shui](
 - **Scrolling** is smooth: it runs on the compositor, and generation happens in a web worker.
 - **Controls** now include drag and fling, trackpad and wheel panning, a play/pause bar and keyboard shortcuts.
 - **The art** reads as a pure-ink Shan Shui painting: ink tones, mist, depth, compositional rhythm, inscriptions and seals, brushwork, and motifs. There is a real night mode.
+- **Mountain styles:** Zhangjiajie-like pillars are available with `?style=pillars` or `?style=blend`.
 - **Seeds**: the same `?seed=` now paints the same landscape on any screen. Seeds from before these changes paint different pictures now.
 
 ---
@@ -203,6 +204,20 @@ The goal was for the app to read as a Shan Shui ink painting rather than line ar
 - **Geese:** flocks in open sky.
 - **Travellers:** figures with staffs on foreground hills, sometimes with an attendant.
 - **Moon:** at night the moon stays fixed while the landscape passes in front of it.
+
+### 9. Zhangjiajie pillars as a URL variant
+
+- **How to choose:** `?style=pillars` or `?style=blend`. Classic stays the default, and there is no on-screen toggle.
+- **Pillars:**
+  - Each mountain position in the plan becomes a cluster of 2–6 sandstone columns, in ranks. Back columns are paler and rise out of a band of mist between the ranks.
+  - Each column has ragged, stepped, slightly leaning sides with ledges, a rounded summit crowned with pines and moss dots, and pines clinging to ledges.
+  - It also has short vertical fissures, axe-cut shading down the shadow side, and faint rock bands.
+  - Widths range from needles to broad blocks, and summits sit at every height.
+- **Distant skyline:** in pillar country it steps between flat-topped columns instead of rolling.
+- **Blend:** a slow noise marks out stretches of "pillar country", so columns come in regions rather than one here and there.
+- **Unchanged:** foreground hills stay classic in every style. Classic pictures are byte-identical to before (all 173 layers checked across four screens).
+- **Links:** the style is part of the link. Opening `?style=pillars` alone gets a fresh seed that keeps the style, Reload and Share keep it, and an unknown style falls back to classic.
+- **Main files:** new `utils/style.ts`, `classes/layers/PillarLayer.ts`, `classes/structures/Pillar.ts` and `classes/structures/Mist.ts` (the foot mist, now shared). `withInkStrength` now multiplies when nested.
 
 ---
 

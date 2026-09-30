@@ -30,9 +30,22 @@ export default class BackgroundMountainLayer extends Layer {
         yOffset: number,
         seed: number = DEFAULT_SEED,
         width: number,
-        height: number
+        height: number,
+        columnar: boolean = false
     ) {
         super("backgroundMountain", xOffset, yOffset);
+
+        // Distant pillars: the skyline steps between flat-topped columns instead of rolling.
+        // The noise mostly sits between 0.3 and 0.7, so stretch it for clear steps.
+        const COLUMN_WIDTH = 45;
+        const columnHeight = (column: number, seed: number) => {
+            const n = (Perlin.noise(column * 1.7, seed) - 0.3) / 0.4;
+            return 0.2 + 0.8 * Math.min(1, Math.max(0, n));
+        };
+        const profile = (k: number, seed: number) =>
+            columnar
+                ? columnHeight(Math.floor((k * SPAN) / COLUMN_WIDTH), seed)
+                : Perlin.noise(k * 0.05, seed);
 
         const pointArray: Point[][] = [];
 
@@ -44,11 +57,14 @@ export default class BackgroundMountainLayer extends Layer {
             seed: number
         ) => {
             const k = i * SEGMENTS + j;
+            // Only the skyline (the part going up) follows the profile
+            const noise =
+                heightMultiplier < 0 ? profile(k, seed) : Perlin.noise(k * 0.05, seed);
             return new Point(
                 xOffset + k * SPAN,
                 yOffset +
                     heightMultiplier *
-                        Perlin.noise(k * 0.05, seed) *
+                        noise *
                         Math.pow(
                             Math.sin((Math.PI * k) / (width / SPAN)),
                             powerExponent

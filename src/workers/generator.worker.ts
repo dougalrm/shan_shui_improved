@@ -6,6 +6,7 @@ import Range from "../classes/Range";
 import SketchLayer from "../classes/SketchLayer";
 import { GeneratedFrame, GeneratorRequest } from "./messages";
 import { config } from "../config";
+import { setMountainStyle } from "../utils/style";
 
 const CHUNK_WIDTH = config.world.chunkWidth;
 
@@ -31,6 +32,7 @@ const seedChunk = (index: number) => {
 worker.onmessage = ({ data }: MessageEvent<GeneratorRequest>) => {
     if (data.type === "seed") {
         pictureSeed = data.seed;
+        setMountainStyle(data.style);
         // Build the noise table now, from the picture's seed, so it doesn't depend on which
         // chunk happens to be generated first
         PRNG.seed = pictureSeed;

@@ -94,6 +94,18 @@ export const config = {
                 colorNoAlfa: "rgba(100, 100, 100,",
             },
         },
+        pillar: {
+            /** Columns are this much taller than the classic mountain they replace */
+            heightScale: 1.15,
+            /** Width of a column at its base; now and then one is much broader */
+            width: { min: 22, max: 80 },
+            /** Roughly how far apart columns stand in a cluster */
+            spacing: { min: 90, max: 150 },
+            /** Keep summits at least this far below the top of the picture */
+            topMargin: 40,
+            /** In the blend style, where the noise (0-1) is above this there are pillars */
+            blendThreshold: 0.5,
+        },
         birds: {
             /** Width of a flock */
             width: 160,

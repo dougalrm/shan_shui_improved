@@ -4,6 +4,7 @@ import Renderer from "../classes/Renderer";
 import { Button } from "./Button";
 import { IMenu } from "../interfaces/IMenu";
 import PRNG from "../classes/PRNG";
+import { pictureUrl } from "../utils/style";
 
 export const Menu = ({
     step,
@@ -80,7 +81,8 @@ export const Menu = ({
             const currentDate = new Date().getTime().toString();
             const state = { info: "Updated URL with new seed" };
             const title = `{Shan, Shui}* - ${currentDate}`;
-            const url = `/?seed=${currentDate}`;
+            // Keeps the mountain style (?style=)
+            const url = pictureUrl(currentDate);
 
             // Use pushState to add to the history stack
             window.history.pushState(state, title, url);

@@ -4,6 +4,7 @@ import { IScrollableCanvas } from "../interfaces/IScrollableCanvas";
 import { RenderedLayer } from "../classes/Renderer";
 import { runWhenIdle } from "../utils/idle";
 import { usePanGestures } from "./usePanGestures";
+import { inkDefs } from "../utils/ink";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 /** Only show the loader if rendering takes longer than this (ms) */
@@ -221,6 +222,14 @@ export const ScrollableCanvas = ({
                         style={{ transform: `scale(${scale})` }}
                     />
                 </div>
+                {/* Gradients and such the picture refers to, e.g. the mist */}
+                <svg
+                    id="InkDefs"
+                    width="0"
+                    height="0"
+                    aria-hidden="true"
+                    dangerouslySetInnerHTML={{ __html: `<defs>${inkDefs()}</defs>` }}
+                />
                 {/* The paper texture never moves, so it is painted once on its own layer */}
                 <svg
                     id="Paper"

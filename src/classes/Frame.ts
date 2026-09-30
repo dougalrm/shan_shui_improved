@@ -7,6 +7,16 @@ import PRNG from "./PRNG";
 import Range from "./Range";
 import SketchLayer from "./SketchLayer";
 import WaterLayer from "./layers/WaterLayer";
+import { withInkStrength } from "../utils/ink";
+
+/**
+ * Atmospheric perspective: things further away (higher up the picture) get paler.
+ * Mountains stand between y = 400 (far) and about 880 (near).
+ * @param {number} y - Where the layer stands
+ * @returns {number} Ink strength for it, see withInkStrength
+ */
+const depthStrength = (y: number) =>
+    0.5 + 0.5 * Math.min(1, Math.max(0, (y - 400) / 400));
 
 /**
  * Class representing a frame used for generating and managing layer of terrain.
@@ -34,10 +44,16 @@ export default class Frame {
 
         if (tag === "middleMountain") {
             seed = PRNG.random(0, 2 * this.id);
-            layer = new MiddleMountainLayer(x, y, seed, width, height);
+            layer = withInkStrength(
+                depthStrength(y),
+                () => new MiddleMountainLayer(x, y, seed, width, height)
+            );
         }
         if (tag === "water") {
-            layer = new WaterLayer(x, y, width, height);
+            layer = withInkStrength(
+                depthStrength(y),
+                () => new WaterLayer(x, y, width, height)
+            );
         }
         if (tag === "bottomMountain") {
             seed = PRNG.random(0, 2 * Math.PI);

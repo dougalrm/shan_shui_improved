@@ -18,7 +18,8 @@
 
 /* Night: pale ink on dark silk, as if lit by the moon */
 body.darkmode {
-    --ink: #ebe5d6;
+    /* Dimmer than white, so dense foliage glows softly rather than blazing */
+    --ink: #cdc6b5;
     --silk: #23262d;
     --paper-light: #e4dfd3;
 }

@@ -334,5 +334,27 @@ export default class MiddleMountainLayer extends Layer {
             () => true,
             this
         );
+
+        // MIST over the foot, so the mountain rises out of it and stands apart from the
+        // ones in front (which are drawn later, over this mist). The gradient is an ellipse
+        // centred on the bottom edge, fading out towards the top and both sides; it reaches
+        // about half way up the box, so the box is twice as tall as the mist.
+        const mistTop = yOffset - height * 0.9;
+        const mistBottom = yOffset + 50;
+        const mistHalfWidth = width * 0.7;
+        this.add(
+            new Element(
+                [
+                    new Point(xOffset - mistHalfWidth, mistTop),
+                    new Point(xOffset + mistHalfWidth, mistTop),
+                    new Point(xOffset + mistHalfWidth, mistBottom),
+                    new Point(xOffset - mistHalfWidth, mistBottom),
+                ],
+                0,
+                0,
+                "url(#mist)",
+                "none"
+            )
+        );
     }
 }

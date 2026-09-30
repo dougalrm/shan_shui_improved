@@ -15,6 +15,26 @@
  * - `fp` / `sp`: fill / stroke in the colour of the silk (the paper the ink sits on)
  */
 
+/** Multiplies the ink of everything being drawn, see withInkStrength */
+let inkStrength = 1;
+
+/**
+ * Draw with more or less ink, e.g. paler for things further away (atmospheric perspective).
+ * Everything that `build` draws has its ink multiplied by `strength`. Silk stays silk.
+ * @param {number} strength - Ink multiplier, 1 is normal
+ * @param {Function} build - Draws something and returns it
+ * @returns What `build` returned
+ */
+export const withInkStrength = <T>(strength: number, build: () => T): T => {
+    const previous = inkStrength;
+    inkStrength = strength;
+    try {
+        return build();
+    } finally {
+        inkStrength = previous;
+    }
+};
+
 /** How many strengths of ink there are */
 export const INK_STEPS = 50;
 /** Brightness (0-255) of the ink the original greys are measured against */
@@ -48,7 +68,10 @@ export const toTone = (color: string): Tone => {
     if (r >= 250) return { kind: "silk" };
 
     // The same darkening on white paper as the original grey gave
-    const amount = Math.min(1, (alpha * (255 - r)) / (255 - INK_BRIGHTNESS));
+    const amount = Math.min(
+        1,
+        ((alpha * (255 - r)) / (255 - INK_BRIGHTNESS)) * inkStrength
+    );
     const step = Math.max(1, Math.round(amount * INK_STEPS));
 
     return { kind: alpha >= 1 ? "wash" : "ink", step };
@@ -102,3 +125,15 @@ export const inkStylesheet = (): string => {
 
     return rules.join("\n");
 };
+
+/**
+ * Shared SVG definitions the picture refers to, e.g. `url(#mist)`. They must be in the page
+ * (and in downloaded files) once.
+ */
+export const inkDefs = (): string => `
+    <radialGradient id="mist" cx="0.5" cy="1" r="0.5">
+        <stop offset="0" style="stop-color:var(--silk);stop-opacity:0.95"/>
+        <stop offset="0.55" style="stop-color:var(--silk);stop-opacity:0.8"/>
+        <stop offset="0.8" style="stop-color:var(--silk);stop-opacity:0.35"/>
+        <stop offset="1" style="stop-color:var(--silk);stop-opacity:0"/>
+    </radialGradient>`;

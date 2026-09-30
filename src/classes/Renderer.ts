@@ -3,7 +3,7 @@ import Range from "./Range";
 import { GeneratedFrame, GeneratorRequest } from "../workers/messages";
 import { LayerType } from "../types/LayerType";
 import { config } from "../config";
-import { inkStylesheet } from "../utils/ink";
+import { inkDefs, inkStylesheet } from "../utils/ink";
 
 const TAG_ORDER = config.renderer.tagOrder;
 const CHUNK_WIDTH = config.world.chunkWidth;
@@ -220,6 +220,7 @@ export default class Renderer {
         ${inkStylesheet()}
     </style>
     <defs>
+        ${inkDefs()}
         <filter id="roughpaper" ${box} filterUnits="userSpaceOnUse">
             <feTurbulence type="fractalNoise" stitchTiles="stitch" baseFrequency="0.02" numOctaves="5" result="noise"/>
             <feDiffuseLighting in="noise" lighting-color="${color("--paper-light")}" surfaceScale="2" result="diffLight">

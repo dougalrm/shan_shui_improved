@@ -9,6 +9,7 @@ export const Menu = ({
     step,
     setStep,
     horizontalScroll,
+    autoScroll,
     toggleAutoScroll,
     newPosition,
     setNewPosition,
@@ -153,6 +154,7 @@ export const Menu = ({
                     name="Auto-scroll"
                     id="InputAutoScroll"
                     type="checkbox"
+                    checked={autoScroll}
                     onChange={toggleAutoScroll}
                 />
                 <label htmlFor="InputAutoScroll">Auto-scroll</label>

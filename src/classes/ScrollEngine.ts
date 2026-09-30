@@ -4,12 +4,20 @@ const RAMP_TIME = 0.4;
 const DRIFT_TIME = 3600;
 /** How often (ms) the position is checked to tell React about it */
 const COMMIT_INTERVAL = 100;
+/** How quickly (px/s²) a fling slows down after letting go of a drag */
+const FLING_DECELERATION = 2500;
+/** Fastest fling (px/s), so a wild flick doesn't throw the picture miles away */
+const MAX_FLING_SPEED = 5000;
+/** Slower than this (px/s) and letting go just stops */
+const MIN_FLING_SPEED = 60;
 const EASE_IN_OUT = "cubic-bezier(0.4, 0, 0.2, 1)";
+/** Slows down evenly from the starting speed, the way a flung object would */
+const DECELERATE = "cubic-bezier(0.333, 0.667, 0.667, 1)";
 const EASE_OUT = "cubic-bezier(0.2, 0, 0, 1)";
 
 const translate = (position: number) => `translate3d(${-position}px,0,0)`;
 
-type Mode = "rest" | "tween" | "drift";
+type Mode = "rest" | "tween" | "drift" | "drag";
 
 /**
  * Drives the horizontal scroll position of the picture.
@@ -22,6 +30,8 @@ type Mode = "rest" | "tween" | "drift";
  * - `scrollBy` eases to a new position (buttons).
  * - `setAutoSpeed` / `setHeldSpeed` scroll at a constant speed (auto-scroll, held keys),
  *   easing in and out when the speed changes.
+ * - `grab` / `dragTo` / `release` follow a pointer directly and fling on release. Constant-speed
+ *   scrolling pauses while grabbed and eases back in afterwards.
  *
  * React only hears about the position every `commitDistance` px and when coming to rest
  * (`onCommit`), never once per frame.
@@ -55,6 +65,8 @@ export default class ScrollEngine {
     get position(): number {
         if (!this.element) return this.restPosition;
 
+        if (this.mode === "drag") return this.restPosition;
+
         const transform = getComputedStyle(this.element).transform;
         return transform === "none" ? 0 : -new DOMMatrixReadOnly(transform).m41;
     }
@@ -83,6 +95,62 @@ export default class ScrollEngine {
             from,
             this.target,
             this.mode === "rest" ? EASE_IN_OUT : EASE_OUT
+        );
+    }
+
+    /** Ease to an absolute position. */
+    scrollTo(position: number): void {
+        this.target = Math.max(0, position);
+        this.play(this.position, this.target, EASE_IN_OUT);
+    }
+
+    /** Take hold of the picture: stop whatever it's doing so it can follow a pointer. */
+    grab(): void {
+        const position = this.position;
+
+        this.stop();
+        this.mode = "drag";
+        this.restPosition = position;
+        if (this.element) this.element.style.transform = translate(position);
+    }
+
+    /** Move the grabbed picture straight to a position. */
+    dragTo(position: number): void {
+        if (this.mode !== "drag") return;
+
+        this.restPosition = Math.max(0, position);
+        if (this.element) {
+            this.element.style.transform = translate(this.restPosition);
+        }
+        this.checkCommit();
+    }
+
+    /** Let go, carrying on at the given speed (px/s) and slowing to a stop. */
+    release(speed: number = 0): void {
+        if (this.mode !== "drag") return;
+
+        const from = this.restPosition;
+        const velocity = Math.max(
+            -MAX_FLING_SPEED,
+            Math.min(MAX_FLING_SPEED, speed)
+        );
+
+        this.mode = "rest";
+        if (this.reducedMotion || Math.abs(velocity) < MIN_FLING_SPEED) {
+            this.settle(Math.round(from));
+            return;
+        }
+
+        // Slowing evenly from `velocity` to 0 covers half the distance it would at full speed
+        const time = Math.abs(velocity) / FLING_DECELERATION;
+        const end = Math.max(0, Math.round(from + (velocity * time) / 2));
+
+        this.target = end;
+        this.mode = "tween";
+        this.run(
+            [{ transform: translate(from) }, { transform: translate(end) }],
+            { duration: time * 1000, easing: DECELERATE },
+            end
         );
     }
 
@@ -145,6 +213,8 @@ export default class ScrollEngine {
         const position = this.position;
 
         if (next === previous) return;
+        // Picked up again when the drag or tween ends (see settle)
+        if (this.mode === "drag") return;
         if (this.mode === "tween" && next === 0) return;
 
         if (next === 0) {
@@ -162,10 +232,7 @@ export default class ScrollEngine {
                     { transform: translate(position) },
                     { transform: translate(end) },
                 ],
-                {
-                    duration: RAMP_TIME * 1000,
-                    easing: "cubic-bezier(0.333, 0.667, 0.667, 1)",
-                },
+                { duration: RAMP_TIME * 1000, easing: DECELERATE },
                 end
             );
             return;

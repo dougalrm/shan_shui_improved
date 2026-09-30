@@ -23,7 +23,7 @@ export interface IButton {
      *
      * @function
      */
-    onClick: () => void;
+    onClick?: () => void;
 
     /**
      * The text to be displayed in the Button.
@@ -31,4 +31,11 @@ export interface IButton {
      * @type {string}
      */
     text: string;
+
+    /**
+     * Whether the Button can't be pressed right now.
+     *
+     * @type {boolean}
+     */
+    disabled?: boolean;
 }

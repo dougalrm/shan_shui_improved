@@ -31,6 +31,13 @@ export interface ISettingPanel {
     horizontalScroll: (value: number) => void;
 
     /**
+     * Whether auto-scroll is on (playing).
+     *
+     * @type {boolean}
+     */
+    autoScroll: boolean;
+
+    /**
      * Toggles auto-scrolling.
      * @function
      */

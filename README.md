@@ -11,7 +11,19 @@ Discover the beauty of an ever-evolving Chinese landscape art. This project comb
 
 <img alt="Shan Shui example" src="./public/img/example.png" width="100%">
 
-You can move the canvas with the left and right arrow keys or by using the buttons. In the menu section, you can find an option to download the whole or part of your art as an SVG or to share it with your friends.
+The landscape unrolls on its own. Drag it (or flick it) to look around, or use a trackpad, the mouse wheel or the arrow keys. The bar at the bottom pauses it, changes the speed and goes fullscreen, and the controls fade away while you watch. In the menu section, you can find an option to download the whole or part of your art as an SVG or to share it with your friends.
+
+| Key | Action |
+| --- | --- |
+| Space | Play / pause |
+| ← → | Scroll while held (Shift for faster) |
+| Page Up / Page Down | Move a screen |
+| Home | Back to the start |
+| + − | Auto-scroll faster / slower |
+| F | Fullscreen |
+| H | Hide / show the controls |
+| D | Dark mode |
+| ? | List of shortcuts |
 
 ## 🏗️ Tech stack
 

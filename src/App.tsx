@@ -11,10 +11,19 @@ import Renderer from "./classes/Renderer";
 import { ScrollableCanvas } from "./ui/ScrollableCanvas";
 import { SettingPanel } from "./ui/SettingPanel";
 import ScrollEngine from "./classes/ScrollEngine";
+import { Controls } from "./ui/Controls";
+import { Shortcuts } from "./ui/Shortcuts";
 import { debounce } from "./utils/utils";
+import { useKeyboardControls } from "./ui/useKeyboardControls";
 
-/** A held arrow key scrolls this many times the step size per second */
-const HOLD_SPEED_FACTOR = 6;
+/** Auto-scroll speeds to pick from (px/s) */
+const SPEEDS = [25, 50, 100, 200, 400];
+/** 100px/s, shown as 1× */
+const DEFAULT_SPEED = 2;
+/** Start scrolling straight away, so the landscape unrolls on its own */
+const PLAY_ON_LOAD = true;
+/** Hide the controls and cursor after this long (ms) without the mouse moving, while playing */
+const IDLE_DELAY = 2500;
 
 /**
  * Main application component.
@@ -58,7 +67,12 @@ export const App = (): ReactElement => {
     const [saveRange, setSaveRange] = useState<Range>(
         new Range(0, window.innerWidth)
     );
-    const [autoScroll, setAutoScroll] = useState<boolean>(false);
+    const [autoScroll, setAutoScroll] = useState<boolean>(PLAY_ON_LOAD);
+    const [speedIndex, setSpeedIndex] = useState(DEFAULT_SPEED);
+    const [helpVisible, setHelpVisible] = useState(false);
+    const [controlsHidden, setControlsHidden] = useState(false);
+    const [idle, setIdle] = useState(false);
+    const [fullscreen, setFullscreen] = useState(false);
     const [reloadCount, setReloadCount] = useState(0);
 
     // Cannot be done via setSeed as it will rerender the scene. Look at Menu.tsx
@@ -70,9 +84,10 @@ export const App = (): ReactElement => {
     };
 
     // Toggle auto-scrolling state
-    const toggleAutoScroll = () => {
+    // Stable, so the keyboard shortcuts (which depend on it) aren't re-registered on every render
+    const toggleAutoScroll = useCallback(() => {
         setAutoScroll((current) => !current);
-    };
+    }, []);
 
     // Toggle auto-loading state and set the save range
     const toggleAutoLoad = () => {
@@ -133,38 +148,86 @@ export const App = (): ReactElement => {
         }
     }, [autoLoad, newPosition, windowWidth]);
 
-    // Auto-scroll drifts at a constant speed: the step size per second
+    // Auto-scroll drifts at a constant speed
     useEffect(() => {
-        engine.setAutoSpeed(autoScroll ? step : 0);
-    }, [engine, autoScroll, step]);
+        engine.setAutoSpeed(autoScroll ? SPEEDS[speedIndex] : 0);
+    }, [engine, autoScroll, speedIndex]);
 
-    // Holding an arrow key scrolls smoothly for as long as it is down
+    const changeSpeed = useCallback((direction: 1 | -1) => {
+        setSpeedIndex((index) =>
+            Math.max(0, Math.min(SPEEDS.length - 1, index + direction))
+        );
+    }, []);
+
+    const toggleFullscreen = useCallback(() => {
+        if (document.fullscreenElement) {
+            document.exitFullscreen?.();
+        } else {
+            document.documentElement.requestFullscreen?.();
+        }
+    }, []);
+
+    const toggleControls = useCallback(
+        () => setControlsHidden((hidden) => !hidden),
+        []
+    );
+    const toggleHelp = useCallback(() => setHelpVisible((shown) => !shown), []);
+    const closeHelp = useCallback(() => setHelpVisible(false), []);
+
+    useKeyboardControls({
+        engine,
+        step,
+        togglePlay: toggleAutoScroll,
+        changeSpeed,
+        toggleFullscreen,
+        toggleControls,
+        toggleHelp,
+        closeHelp,
+    });
+
+    // Follow fullscreen changes, including leaving it with Esc
     useEffect(() => {
-        const speed = step * HOLD_SPEED_FACTOR;
+        const onChange = () => setFullscreen(!!document.fullscreenElement);
+        document.addEventListener("fullscreenchange", onChange);
+        return () => document.removeEventListener("fullscreenchange", onChange);
+    }, []);
 
-        const onKeyDown = (event: KeyboardEvent) => {
-            // Let the arrows move the caret when typing in the menu
-            if (event.target instanceof HTMLInputElement) return;
-            if (event.key === "ArrowLeft") engine.setHeldSpeed(-speed);
-            if (event.key === "ArrowRight") engine.setHeldSpeed(speed);
-        };
-        const onKeyUp = (event: KeyboardEvent) => {
-            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-                engine.setHeldSpeed(0);
-            }
-        };
-        const release = () => engine.setHeldSpeed(0);
+    // While playing, get the controls and cursor out of the way until the mouse moves
+    useEffect(() => {
+        if (!autoScroll) {
+            setIdle(false);
+            return;
+        }
 
-        document.addEventListener("keydown", onKeyDown);
-        document.addEventListener("keyup", onKeyUp);
-        window.addEventListener("blur", release);
+        let timer = 0;
+        const wake = () => {
+            setIdle(false);
+            window.clearTimeout(timer);
+            timer = window.setTimeout(() => {
+                // Not while the settings or the shortcut list are open
+                const menuOpen = document.querySelector("#Menu:not(.hidden)");
+                if (!menuOpen && !document.getElementById("Shortcuts")) {
+                    setIdle(true);
+                }
+            }, IDLE_DELAY);
+        };
+
+        wake();
+        window.addEventListener("pointermove", wake);
+        window.addEventListener("pointerdown", wake);
+        window.addEventListener("keydown", wake);
         return () => {
-            document.removeEventListener("keydown", onKeyDown);
-            document.removeEventListener("keyup", onKeyUp);
-            window.removeEventListener("blur", release);
-            release();
+            window.clearTimeout(timer);
+            window.removeEventListener("pointermove", wake);
+            window.removeEventListener("pointerdown", wake);
+            window.removeEventListener("keydown", wake);
         };
-    }, [engine, step]);
+    }, [autoScroll]);
+
+    useEffect(() => {
+        document.body.classList.toggle("ui-idle", idle);
+        document.body.classList.toggle("ui-hidden", controlsHidden);
+    }, [idle, controlsHidden]);
 
     return (
         <>
@@ -172,6 +235,7 @@ export const App = (): ReactElement => {
                 step={step}
                 setStep={setStep}
                 horizontalScroll={horizontalScroll}
+                autoScroll={autoScroll}
                 toggleAutoScroll={toggleAutoScroll}
                 newPosition={newPosition}
                 setNewPosition={jumpTo}
@@ -192,6 +256,22 @@ export const App = (): ReactElement => {
                 renderer={rendererRef.current}
                 reloadCount={reloadCount}
             />
+            <Controls
+                playing={autoScroll}
+                onTogglePlay={toggleAutoScroll}
+                speedLabel={`${SPEEDS[speedIndex] / SPEEDS[DEFAULT_SPEED]}×`}
+                onSlower={speedIndex > 0 ? () => changeSpeed(-1) : undefined}
+                onFaster={
+                    speedIndex < SPEEDS.length - 1
+                        ? () => changeSpeed(1)
+                        : undefined
+                }
+                onStart={() => engine.scrollTo(0)}
+                fullscreen={fullscreen}
+                onToggleFullscreen={toggleFullscreen}
+                onHelp={toggleHelp}
+            />
+            <Shortcuts visible={helpVisible} onClose={closeHelp} />
         </>
     );
 };

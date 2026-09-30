@@ -7,6 +7,7 @@ export const SettingPanel = ({
     step,
     setStep,
     horizontalScroll,
+    autoScroll,
     toggleAutoScroll,
     newPosition,
     setNewPosition,
@@ -38,6 +39,20 @@ export const SettingPanel = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // D toggles dark mode, Esc closes the settings
+    useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.metaKey || event.ctrlKey || event.altKey) return;
+            if (event.target instanceof HTMLInputElement) return;
+
+            if (event.key === "d" || event.key === "D") toggleDarkmode();
+            if (event.key === "Escape" && menuVisible) toggleVisible();
+        };
+
+        document.addEventListener("keydown", onKeyDown);
+        return () => document.removeEventListener("keydown", onKeyDown);
+    });
 
     // Function to handle GitHub button click
     const handleGitHubClick = () => {
@@ -77,6 +92,8 @@ export const SettingPanel = ({
         const menu = document.getElementById("Menu") as HTMLElement;
 
         setDarkMode(!darkMode);
+        // For everything styled from the page level, e.g. the controls bar
+        document.body.classList.toggle("darkmode", !darkMode);
 
         if (!darkMode) {
             buttons.classList.add("darkmode");
@@ -99,7 +116,7 @@ export const SettingPanel = ({
 
     return (
         <>
-            <div id="Buttons">
+            <div id="Buttons" className="Fadeable">
                 <div className="TopButtons">
                     <div className="LeftButtons">
                         <Button
@@ -141,6 +158,7 @@ export const SettingPanel = ({
                 step={step}
                 setStep={setStep}
                 horizontalScroll={horizontalScroll}
+                autoScroll={autoScroll}
                 toggleAutoScroll={toggleAutoScroll}
                 newPosition={newPosition}
                 setNewPosition={setNewPosition}

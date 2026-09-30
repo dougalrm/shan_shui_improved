@@ -70,6 +70,15 @@ input.InputSeed {
     position: fixed;
     inset: 0;
     overflow: hidden;
+    cursor: grab;
+    /* Drags pan the picture instead of scrolling or zooming the page */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+
+    &.dragging {
+        cursor: grabbing;
+    }
     /* the paper multiplies with the picture inside, not with the page */
     isolation: isolate;
 
@@ -106,6 +115,7 @@ input.InputSeed {
 }
 
 #Loader {
+    pointer-events: none;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
@@ -133,6 +143,9 @@ input.InputSeed {
 div#Buttons {
     position: fixed;
     z-index: 3;
+    /* Covers the whole screen for layout; only the buttons themselves take clicks,
+       so the picture underneath can be dragged */
+    pointer-events: none;
     top: 3px;
     width: 100%;
     height: 100%;
@@ -168,6 +181,7 @@ div#Buttons {
         height: 48px;
         margin: 3px;
         font-size: 20px;
+        pointer-events: auto;
     }
 
     & button#Settings {
@@ -256,6 +270,143 @@ div#Menu.hidden {
 
 div#Menu.darkmode {
     backdrop-filter: blur(3px) invert(1);
+    filter: invert(1) sepia(1);
+}
+
+div#Controls {
+    position: fixed;
+    z-index: 3;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+
+    & button {
+        width: 44px;
+        height: 44px;
+        margin: 3px;
+        font-size: 18px;
+    }
+
+    & button#PlayPause {
+        width: 56px;
+        height: 56px;
+        font-size: 20px;
+    }
+
+    & button:disabled {
+        cursor: default;
+        opacity: 0.4;
+    }
+
+    & #Speed {
+        min-width: 44px;
+        text-align: center;
+        font-size: 15px;
+        color: rgba(0, 0, 0, 0.55);
+    }
+}
+
+/* Seven buttons don't fit a phone at full size */
+@media (max-width: 480px) {
+    div#Controls {
+        bottom: 8px;
+        gap: 0;
+
+        & button {
+            width: 38px;
+            height: 38px;
+            margin: 2px;
+            font-size: 16px;
+        }
+
+        & button#PlayPause {
+            width: 46px;
+            height: 46px;
+        }
+
+        & #Speed {
+            min-width: 32px;
+        }
+    }
+}
+
+body.darkmode div#Controls {
+    filter: invert(1) sepia(1);
+
+    & button {
+        backdrop-filter: blur(3px) invert(1);
+    }
+}
+
+/* The controls fade away while playing with the mouse still (ui-idle), or when hidden with H */
+.Fadeable {
+    transition: opacity 0.6s ease;
+}
+
+body.ui-idle .Fadeable,
+body.ui-hidden .Fadeable {
+    opacity: 0;
+
+    & button {
+        pointer-events: none;
+    }
+}
+
+body.ui-idle #Canvas {
+    cursor: none;
+}
+
+div#Shortcuts {
+    position: fixed;
+    z-index: 4;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.15);
+
+    & .Panel {
+        backdrop-filter: blur(3px);
+        background-color: rgba(255, 255, 255, 0.6);
+        border-top-left-radius: 255px 15px;
+        border-bottom-left-radius: 15px 225px;
+        border-bottom-right-radius: 225px 15px;
+        border-top-right-radius: 15px 255px;
+        border: solid 3px rgba(100, 100, 100, 0.579);
+        padding: 20px 28px;
+        max-width: calc(100vw - 32px);
+        box-sizing: border-box;
+    }
+
+    & h4 {
+        margin: 0 0 12px 0;
+        text-align: center;
+    }
+
+    & dl {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 6px 20px;
+        margin: 0;
+        font-size: 15px;
+    }
+
+    & dt {
+        text-align: right;
+        white-space: nowrap;
+        color: rgba(0, 0, 0, 0.8);
+    }
+
+    & dd {
+        margin: 0;
+        color: rgba(0, 0, 0, 0.6);
+    }
+}
+
+body.darkmode div#Shortcuts .Panel {
     filter: invert(1) sepia(1);
 }
 

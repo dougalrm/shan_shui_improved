@@ -3,6 +3,7 @@ import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { IScrollableCanvas } from "../interfaces/IScrollableCanvas";
 import { RenderedLayer } from "../classes/Renderer";
 import { runWhenIdle } from "../utils/idle";
+import { usePanGestures } from "./usePanGestures";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 /** Only show the loader if rendering takes longer than this (ms) */
@@ -37,6 +38,8 @@ export const ScrollableCanvas = ({
     renderer,
     reloadCount,
 }: IScrollableCanvas) => {
+    /** Receives drags and wheel movement */
+    const canvasRef = useRef<HTMLDivElement>(null);
     /** Holds one <svg> per layer and is what the engine moves */
     const worldRef = useRef<HTMLDivElement>(null);
     /** Layer elements currently in the DOM, so only the changes are touched when scrolling */
@@ -45,6 +48,8 @@ export const ScrollableCanvas = ({
     const syncRef = useRef({ running: false, pending: null as RenderedLayer[] | null });
     /** Bumped on reload, so a sync that is still under way knows it is for the old picture */
     const epochRef = useRef(0);
+
+    usePanGestures(canvasRef, engine);
 
     // The engine moves the picture with an animation the browser runs off the main thread
     useLayoutEffect(() => {
@@ -203,7 +208,7 @@ export const ScrollableCanvas = ({
 
     return (
         <div id="ScrollableCanvas">
-            <div id="Canvas">
+            <div id="Canvas" ref={canvasRef}>
 <div id="World" ref={worldRef} />
                 {/* The paper texture never moves, so it is painted once on its own layer */}
                 <svg

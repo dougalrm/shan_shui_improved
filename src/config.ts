@@ -92,6 +92,30 @@ export const config = {
                 colorNoAlfa: "rgba(100, 100, 100,",
             },
         },
+        inscription: {
+            /** Width of the space an inscription takes: four poem columns and the signature */
+            width: 170,
+            height: 200,
+            /**
+             * Classical landscape poems, all long in the public domain. One line per column,
+             * without punctuation, as they are traditionally written on paintings.
+             */
+            poems: [
+                { poet: "录柳宗元诗", lines: ["千山鸟飞绝", "万径人踪灭", "孤舟蓑笠翁", "独钓寒江雪"] },
+                { poet: "录王维诗", lines: ["空山不见人", "但闻人语响", "返景入深林", "复照青苔上"] },
+                { poet: "录李白诗", lines: ["众鸟高飞尽", "孤云独去闲", "相看两不厌", "只有敬亭山"] },
+                { poet: "录贾岛诗", lines: ["松下问童子", "言师采药去", "只在此山中", "云深不知处"] },
+                { poet: "录孟浩然诗", lines: ["移舟泊烟渚", "日暮客愁新", "野旷天低树", "江清月近人"] },
+                { poet: "录苏轼诗", lines: ["横看成岭侧成峰", "远近高低各不同", "不识庐山真面目", "只缘身在此山中"] },
+                { poet: "录杜牧诗", lines: ["远上寒山石径斜", "白云生处有人家", "停车坐爱枫林晚", "霜叶红于二月花"] },
+                { poet: "录王维诗", lines: ["空山新雨后", "天气晚来秋", "明月松间照", "清泉石上流"] },
+                { poet: "录陶渊明诗", lines: ["采菊东篱下", "悠然见南山", "山气日夕佳", "飞鸟相与还"] },
+                { poet: "录王维诗", lines: ["行到水穷处", "坐看云起时"] },
+                { poet: "录王之涣诗", lines: ["白日依山尽", "黄河入海流", "欲穷千里目", "更上一层楼"] },
+            ],
+            /** Seal phrases, two or four characters: e.g. 卧游 "travelling lying down", viewing a landscape painting as a journey */
+            seals: ["卧游", "林泉高致", "山水清音", "云烟供养", "烟霞", "听松", "逍遥"],
+        },
         water: {
             defaultWaveClusters: 5, // Number of clusters of waves. Water is mostly left as empty paper
             colorNoAlfa: "rgba(100, 100, 100,", // color without the alpha. Need to add alfa value and closing bracket
@@ -108,6 +132,7 @@ export const config = {
             water: 3,
             middleMountain: 4,
             bottomMountain: 5,
+            inscription: 6,
         },
     },
     designer: {
@@ -116,6 +141,14 @@ export const config = {
         intensity: {
             /** How quickly the landscape moves between quiet stretches and massifs (per unit) */
             frequency: 0.0004,
+        },
+        inscription: {
+            /** How strongly a chunk has to stand out to get one (noise, 0-1, see Designer.wantsInscription) */
+            threshold: 0.45,
+            /** Top of an inscription */
+            y: 40,
+            /** Clear space kept around it */
+            margin: 30,
         },
         hostPeak: {
             /** Only where the landscape is at least this intense (0-1) */

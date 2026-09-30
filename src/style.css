@@ -14,6 +14,8 @@
     --silk: #ffffff;
     /* Colour of the light on the paper texture, which is multiplied over everything */
     --paper-light: #f0e7d0;
+    /* Cinnabar seal paste */
+    --seal: #b3302a;
 }
 
 /* Night: pale ink on dark silk, as if lit by the moon */
@@ -22,6 +24,7 @@ body.darkmode {
     --ink: #cdc6b5;
     --silk: #23262d;
     --paper-light: #e4dfd3;
+    --seal: #9c3a31;
 }
 
 body {

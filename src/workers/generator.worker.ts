@@ -49,8 +49,13 @@ worker.onmessage = ({ data }: MessageEvent<GeneratorRequest>) => {
         neighbours = new Designer(chunkRange(index - 1)).plan;
     }
 
+    // And roughly what the chunk to the right plans, so an inscription here stays clear of
+    // its mountains
+    seedChunk(index + 1);
+    const rightNeighbours = new Designer(chunkRange(index + 1)).plan;
+
     seedChunk(index);
-    const plan = new Designer(chunkRange(index), neighbours).plan;
+    const plan = new Designer(chunkRange(index), neighbours, rightNeighbours).plan;
     // The frame id feeds some layer seeds, keep it the chunk number (+1, as ids started at 1)
     const frame = new Frame(index + 1);
 

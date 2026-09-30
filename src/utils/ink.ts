@@ -122,6 +122,11 @@ export const inkStylesheet = (): string => {
         rules.push(`.w${step}{fill:${wash}}`, `.v${step}{stroke:${wash}}`);
     }
     rules.push(".fp{fill:var(--silk)}", ".sp{stroke:var(--silk)}");
+    // Inscriptions and seals. Downloaded files fall back to a Kai (regular script) font
+    // installed on the computer if the brush font isn't.
+    rules.push(
+        '.calligraphy{font-family:"Ma Shan Zheng","STKaiti","KaiTi","Kaiti SC",serif}'
+    );
 
     return rules.join("\n");
 };

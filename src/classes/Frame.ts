@@ -7,6 +7,7 @@ import PRNG from "./PRNG";
 import Range from "./Range";
 import SketchLayer from "./SketchLayer";
 import WaterLayer from "./layers/WaterLayer";
+import InscriptionLayer from "./layers/InscriptionLayer";
 import { withInkStrength } from "../utils/ink";
 
 /**
@@ -62,6 +63,9 @@ export default class Frame {
         if (tag === "backgroundMountain") {
             seed = PRNG.random(0, 100);
             layer = new BackgroundMountainLayer(x, y, seed, width, height);
+        }
+        if (tag === "inscription") {
+            layer = new InscriptionLayer(x, y);
         }
         if (tag === "boat") {
             const flip = PRNG.randomChoice([true, false]);

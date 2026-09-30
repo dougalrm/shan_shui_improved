@@ -45,6 +45,12 @@ const HOST_PEAK_HEIGHT_MAX = config.designer.hostPeak.height.max;
 const HOST_PEAK_BASE_MIN = config.designer.hostPeak.base.min;
 const HOST_PEAK_BASE_MAX = config.designer.hostPeak.base.max;
 const HOST_PEAK_SPACING = config.designer.hostPeak.spacing;
+const INSCRIPTION_THRESHOLD = config.designer.inscription.threshold;
+const INSCRIPTION_Y = config.designer.inscription.y;
+const CHUNK_WIDTH = config.world.chunkWidth;
+const INSCRIPTION_MARGIN = config.designer.inscription.margin;
+const INSCRIPTION_WIDTH = config.layers.inscription.width;
+const INSCRIPTION_HEIGHT = config.layers.inscription.height;
 
 /**
  * Class for designing new frame. The main reason for this class is to generate new terrain
@@ -57,10 +63,13 @@ export default class Designer {
      * @param {Range} range - range for which to generate design.
      * @param {SketchLayer[]} [neighbours=[]] - What the chunk next door planned. Nothing here
      * may collide with it, but it isn't part of this plan.
+     * @param {SketchLayer[]} [rightNeighbours=[]] - What the chunk to the right roughly plans,
+     * only used to keep inscriptions clear of mountains reaching over the border.
      */
     constructor(
         public range: Range,
-        private neighbours: SketchLayer[] = []
+        private neighbours: SketchLayer[] = [],
+        private rightNeighbours: SketchLayer[] = []
     ) {
         this.generateDesign(range);
     }
@@ -79,6 +88,55 @@ export default class Designer {
         // stretches are the exception and the busiest parts reach the host peak threshold
         const value = (noise - 0.25) / 0.35;
         return Math.min(1, Math.max(0, value));
+    }
+
+    /**
+     * Whether chunk `index` gets an inscription. Decided from the picture's noise alone, not
+     * from what neighbouring chunks planned, so it is consistent everywhere: only chunks where
+     * the noise peaks over the two chunks either side qualify, which keeps inscriptions at
+     * least three chunks apart.
+     * @param {number} index - The chunk number
+     * @returns {boolean} whether to look for room for an inscription
+     */
+    static wantsInscription(index: number): boolean {
+        const value = (i: number) => Perlin.noise(i * 0.9 + 0.5, 91.7);
+        const here = value(index);
+
+        if (here < INSCRIPTION_THRESHOLD) return false;
+        for (let d = 1; d <= 2; d++) {
+            if (value(index - d) >= here || value(index + d) > here) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Whether there is open sky for an inscription: no mountain behind it (taking their real
+     * shape: they rise up from their base). The pale distant mountains may show through, as
+     * they often do behind inscriptions on real paintings.
+     * @param {SketchLayer} inscription - Where the inscription would go
+     * @returns {boolean} true if it can go there
+     */
+    private isSkyClear(inscription: SketchLayer): boolean {
+        const left = inscription.x - INSCRIPTION_MARGIN;
+        const right = inscription.x + inscription.width + INSCRIPTION_MARGIN;
+        const bottom = inscription.y + inscription.height + INSCRIPTION_MARGIN;
+        const all = [...this.neighbours, ...this.plan, ...this.rightNeighbours];
+
+        return all.every((layer) => {
+            if (
+                layer.tag !== "middleMountain" &&
+                layer.tag !== "bottomMountain"
+            ) {
+                return true;
+            }
+
+            // Mountains are drawn centred on x
+            const layerLeft = layer.x - layer.width / 2;
+            const layerRight = layer.x + layer.width / 2;
+            const layerTop = layer.y - layer.height;
+
+            return layerRight < left || layerLeft > right || layerTop > bottom;
+        });
     }
 
     /**
@@ -316,6 +374,27 @@ export default class Designer {
                     ])
                 ) {
                     this.plan.push(boatChunk);
+                }
+            }
+        }
+
+        // An inscription (题款) in the open sky, now and then
+        if (Designer.wantsInscription(Math.round(range.start / CHUNK_WIDTH))) {
+            const start = PRNG.random(0, range.length);
+
+            for (let step = 0; step < range.length; step += 50) {
+                const x = range.start + ((start + step) % range.length);
+                const inscription = new SketchLayer(
+                    "inscription",
+                    x,
+                    INSCRIPTION_Y,
+                    INSCRIPTION_WIDTH,
+                    INSCRIPTION_HEIGHT
+                );
+
+                if (this.isSkyClear(inscription)) {
+                    this.plan.push(inscription);
+                    break;
                 }
             }
         }

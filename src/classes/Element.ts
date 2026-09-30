@@ -1,6 +1,7 @@
 import Point from "./Point";
 import Range from "./Range";
 import { config } from "../config";
+import { inkAttributes } from "../utils/ink";
 
 const DEFAULT_FILL_COLOR = config.element.defaultFillColor;
 const DEFAULT_STROKE_COLOR = config.element.defaultStrokeColor;
@@ -32,7 +33,7 @@ export default class Element {
         strokeColor: string = DEFAULT_STROKE_COLOR,
         strokeWidth: number = DEFAULT_STROKE_WIDTH
     ) {
-        const style = `style='fill:${fillColor}; stroke:${strokeColor}; stroke-width:${strokeWidth}'`;
+        const style = inkAttributes(fillColor, strokeColor, strokeWidth);
 
         let points = "";
         let xMin = +Infinity;

@@ -19,7 +19,6 @@ export const Menu = ({
     saveRange,
     onChangeSaveRange,
     toggleAutoLoad,
-    darkMode,
     onReload,
     initalSeed,
 }: IMenu) => {
@@ -33,7 +32,7 @@ export const Menu = ({
     // Handler for downloading SVG
     const downloadSvg = () => {
         if (saveRange.length > 0) {
-            renderer.download(initalSeed, saveRange, windowHeight, darkMode);
+            renderer.download(initalSeed, saveRange, windowHeight);
         } else {
             alert(
                 "Range length must be above zero.\nYour current start position is lower than the end position."

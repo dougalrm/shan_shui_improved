@@ -232,7 +232,7 @@ export const ScrollableCanvas = ({
                             />
                             <feDiffuseLighting
                                 in="noise"
-                                lightingColor="#F0E7D0"
+                                style={{ lightingColor: "var(--paper-light)" }}
                                 surfaceScale="2"
                                 result="diffLight"
                             >

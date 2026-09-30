@@ -3,6 +3,7 @@ import Range from "./Range";
 import { GeneratedFrame, GeneratorRequest } from "../workers/messages";
 import { LayerType } from "../types/LayerType";
 import { config } from "../config";
+import { inkStylesheet } from "../utils/ink";
 
 const TAG_ORDER = config.renderer.tagOrder;
 
@@ -214,7 +215,8 @@ export default class Renderer {
     }
 
     /**
-     * Downloads the terrain SVG based on the given parameters.
+     * Downloads the terrain SVG based on the given parameters. The file carries the current
+     * palette (day or night) with it, since it can't rely on the page's CSS.
      * @param seed - The seed for the terrain generation.
      * @param range - The range for which to generate the SVG.
      * @param windowHeight - The height of the SVG.
@@ -222,63 +224,46 @@ export default class Renderer {
     public async download(
         seed: string,
         range: Range,
-        windowHeight: number,
-        darkMode?: boolean
+        windowHeight: number
     ): Promise<void> {
         const filename: string = `${seed}-[${range.start}, ${range.end}].svg`;
         const viewbox = `${range.start} 0 ${range.length} ${windowHeight}`;
-        const element = document.createElement("a");
+        const palette = getComputedStyle(document.body);
+        const color = (name: string) => palette.getPropertyValue(name).trim();
         const svg = await this.render(range);
-        const content: string = `
-        <svg 
-            id="SVG" 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="${range.length}" 
-            height="${windowHeight}" 
-            viewBox="${viewbox}"
-            style="${darkMode && "filter: invert(1) sepia(1);"}">
-            <defs>
-                <filter 
-                    width="${range.length}" 
-                    height="${windowHeight}" 
-                    id="roughpaper">
-                          <feTurbulence
-                            type="fractalNoise"
-                            stitchTiles="stitch"
-                            baseFrequency="0.02"
-                            numOctaves="5"
-                            result="noise"
-                        />
-                        <feDiffuseLighting
-                            in="noise"
-                            lightingColor="#F0E7D0"
-                            surfaceScale="2"
-                            result="diffLight"
-                        >
-                            <feDistantLight azimuth="45" elevation="60" />
-                        </feDiffuseLighting>
-                </filter>
-            </defs>
-            <g id="main">
-                ${svg}       
-            </g>
-            <rect 
-                id="Background" 
-                width="${range.length}" 
-                height="${windowHeight}" 
-                filter="url(#roughpaper)" 
-                style="mix-blend-mode: multiply">
-            </rect>
-        </svg>`;
+        const box = `x="${range.start}" y="0" width="${range.length}" height="${windowHeight}"`;
+        const content: string = `<svg xmlns="http://www.w3.org/2000/svg" width="${range.length}" height="${windowHeight}" viewBox="${viewbox}">
+    <style>
+        svg { --ink: ${color("--ink")}; --silk: ${color("--silk")}; }
+        ${inkStylesheet()}
+    </style>
+    <defs>
+        <filter id="roughpaper" ${box} filterUnits="userSpaceOnUse">
+            <feTurbulence type="fractalNoise" stitchTiles="stitch" baseFrequency="0.02" numOctaves="5" result="noise"/>
+            <feDiffuseLighting in="noise" lighting-color="${color("--paper-light")}" surfaceScale="2" result="diffLight">
+                <feDistantLight azimuth="45" elevation="60"/>
+            </feDiffuseLighting>
+        </filter>
+    </defs>
+    <rect id="Silk" ${box} fill="${color("--silk")}"/>
+    <g id="main">
+${svg}
+    </g>
+    <rect id="Background" ${box} filter="url(#roughpaper)" style="mix-blend-mode: multiply"/>
+</svg>`;
 
-        element.setAttribute(
-            "href",
-            `data:text/plain;charset=utf-8,${encodeURIComponent(content)}`
+        // A blob URL copes with pictures far bigger than a data: URL can hold
+        const url = URL.createObjectURL(
+            new Blob([content], { type: "image/svg+xml" })
         );
-        element.setAttribute("download", filename);
+        const element = document.createElement("a");
+
+        element.href = url;
+        element.download = filename;
         element.style.display = "none";
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
+        setTimeout(() => URL.revokeObjectURL(url), 0);
     }
 }

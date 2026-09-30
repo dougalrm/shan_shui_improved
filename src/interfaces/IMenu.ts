@@ -101,12 +101,6 @@ export interface IMenu {
     toggleAutoLoad: () => void;
 
     /**
-     * The dark mode state.
-     *
-     * @type {boolean}
-     */
-    darkMode: boolean;
-    /**
      * Tells the canvas that the picture was redesigned and has to be redrawn
      * @function
      */

@@ -83,7 +83,6 @@ export const SettingPanel = ({
         const darkModeButton = document.getElementById(
             "Darkmode"
         ) as HTMLElement;
-        const svg = document.getElementById("Canvas") as HTMLElement;
         const leftScroll = document.getElementById("LeftScroll") as HTMLElement;
         const rightScroll = document.getElementById(
             "RightScroll"
@@ -92,7 +91,7 @@ export const SettingPanel = ({
         const menu = document.getElementById("Menu") as HTMLElement;
 
         setDarkMode(!darkMode);
-        // For everything styled from the page level, e.g. the controls bar
+        // Switches the painting to the night palette (see style.css), and styles page-level UI
         document.body.classList.toggle("darkmode", !darkMode);
 
         if (!darkMode) {
@@ -101,7 +100,6 @@ export const SettingPanel = ({
             rightScroll.classList.add("darkmode");
             menu.classList.add("darkmode");
             loader.classList.add("darkmode");
-            svg.classList.add("darkmode");
             darkModeButton.title = "Light mode";
         } else {
             buttons.classList.remove("darkmode");
@@ -109,7 +107,6 @@ export const SettingPanel = ({
             rightScroll.classList.remove("darkmode");
             menu.classList.remove("darkmode");
             loader.classList.remove("darkmode");
-            svg.classList.remove("darkmode");
             darkModeButton.title = "Dark mode";
         }
     };
@@ -168,7 +165,6 @@ export const SettingPanel = ({
                 saveRange={saveRange}
                 onChangeSaveRange={onChangeSaveRange}
                 toggleAutoLoad={toggleAutoLoad}
-                darkMode={darkMode}
                 onReload={onReload}
                 initalSeed={initalSeed}
             />

@@ -1,0 +1,104 @@
+/**
+ * Ink tones.
+ *
+ * The generator describes colours the way the original code did: greys with an alpha, e.g.
+ * `rgba(100,100,100,0.4)`, and white for the paper-coloured fills that hide what's behind.
+ * Here each colour is turned into how much ink it is (0-1) and written as a CSS class instead
+ * of an inline colour. The classes get their colours from CSS variables, so the whole picture
+ * can switch palette (day ink, night...) instantly, without being generated again, and the
+ * markup is a lot smaller.
+ *
+ * - `f1`...`f50` / `s1`...`s50`: translucent ink fill / stroke, in 50 steps of strength.
+ *   Overlapping strokes build up, like ink does.
+ * - `w1`...`w50` / `v1`...`v50`: opaque wash fill / stroke: ink already mixed with the silk, for
+ *   the original opaque greys (e.g. distant mountains made of triangles that must not show seams)
+ * - `fp` / `sp`: fill / stroke in the colour of the silk (the paper the ink sits on)
+ */
+
+/** How many strengths of ink there are */
+export const INK_STEPS = 50;
+/** Brightness (0-255) of the ink the original greys are measured against */
+const INK_BRIGHTNESS = 20;
+
+type Tone =
+    | { kind: "none" }
+    | { kind: "silk" }
+    | { kind: "ink"; step: number }
+    | { kind: "wash"; step: number }
+    | { kind: "raw"; css: string };
+
+const GREY = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/;
+
+/** Work out what a colour means in ink. */
+export const toTone = (color: string): Tone => {
+    const value = color.trim().toLowerCase();
+
+    if (value === "none" || value === "transparent") return { kind: "none" };
+    if (value === "white") return { kind: "silk" };
+
+    const match = GREY.exec(value);
+    if (!match) return { kind: "raw", css: color };
+
+    const [r, g, b] = [match[1], match[2], match[3]].map(Number);
+    const alpha = match[4] === undefined ? 1 : Number(match[4]);
+
+    if (alpha <= 0) return { kind: "none" };
+    // Only greys are ink, anything coloured is kept as it is
+    if (r !== g || g !== b) return { kind: "raw", css: color };
+    if (r >= 250) return { kind: "silk" };
+
+    // The same darkening on white paper as the original grey gave
+    const amount = Math.min(1, (alpha * (255 - r)) / (255 - INK_BRIGHTNESS));
+    const step = Math.max(1, Math.round(amount * INK_STEPS));
+
+    return { kind: alpha >= 1 ? "wash" : "ink", step };
+};
+
+/**
+ * Attributes (class, and inline style for anything that isn't ink) for an element with
+ * the given fill and stroke.
+ */
+export const inkAttributes = (
+    fill: string,
+    stroke: string,
+    strokeWidth: number
+): string => {
+    const classes: string[] = [];
+    const styles: string[] = [];
+    const fillTone = toTone(fill);
+    const strokeTone = toTone(stroke);
+
+    if (fillTone.kind === "ink") classes.push(`f${fillTone.step}`);
+    if (fillTone.kind === "wash") classes.push(`w${fillTone.step}`);
+    if (fillTone.kind === "silk") classes.push("fp");
+    if (fillTone.kind === "raw") styles.push(`fill:${fillTone.css}`);
+
+    if (strokeTone.kind === "ink") classes.push(`s${strokeTone.step}`);
+    if (strokeTone.kind === "wash") classes.push(`v${strokeTone.step}`);
+    if (strokeTone.kind === "silk") classes.push("sp");
+    if (strokeTone.kind === "raw") styles.push(`stroke:${strokeTone.css}`);
+
+    let attributes = classes.length ? `class='${classes.join(" ")}'` : "";
+    if (styles.length) attributes += ` style='${styles.join(";")}'`;
+    if (strokeTone.kind !== "none" && strokeWidth) {
+        attributes += ` stroke-width='${+strokeWidth.toFixed(2)}'`;
+    }
+    return attributes;
+};
+
+/** The CSS for the tone classes. Needs `--ink` and `--silk` to be defined. */
+export const inkStylesheet = (): string => {
+    const rules = ["polyline{fill:none;stroke:none}"];
+
+    for (let step = 1; step <= INK_STEPS; step++) {
+        const opacity = +(step / INK_STEPS).toFixed(3);
+        rules.push(`.f${step}{fill:var(--ink);fill-opacity:${opacity}}`);
+        rules.push(`.s${step}{stroke:var(--ink);stroke-opacity:${opacity}}`);
+
+        const wash = `color-mix(in srgb,var(--ink) ${+(opacity * 100).toFixed(1)}%,var(--silk))`;
+        rules.push(`.w${step}{fill:${wash}}`, `.v${step}{stroke:${wash}}`);
+    }
+    rules.push(".fp{fill:var(--silk)}", ".sp{stroke:var(--silk)}");
+
+    return rules.join("\n");
+};

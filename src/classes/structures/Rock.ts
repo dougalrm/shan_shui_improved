@@ -5,6 +5,7 @@ import Point from "../Point";
 import Stroke from "../elements/Stroke";
 import Element from "../Element";
 import Texture from "./Texture";
+import MossDots from "./MossDots";
 import { normalizeNoise } from "../../utils/utils";
 
 /**
@@ -87,10 +88,22 @@ export default class Rock extends Structure {
                 pointArray[0].map(
                     (p) => new Point(p.x + this.xOffset, p.y + this.yOffset)
                 ),
-                "rgba(100,100,100,0.3)",
-                "rgba(100,100,100,0.3)",
+                "rgba(100,100,100,0.4)",
+                "rgba(100,100,100,0.4)",
                 3,
                 1
+            )
+        );
+
+        // MOSS DOTS on the top of the rock
+        this.add(
+            new MossDots(
+                pointArray[0].filter((p) => p.y < -this.height * 0.3),
+                this.xOffset,
+                this.yOffset,
+                this.seed + this.xOffset,
+                0.3,
+                0.7
             )
         );
 

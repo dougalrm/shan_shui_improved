@@ -1,6 +1,7 @@
 import BottomMountainDecoration from "../structures/BottomMountainDecoration";
 import Element from "../Element";
 import Layer from "../Layer";
+import MossDots from "../structures/MossDots";
 import PRNG from "../PRNG";
 import Perlin from "../Perlin";
 import Point from "../Point";
@@ -113,6 +114,18 @@ export default class BottomMountainLayer extends Layer {
                 OUTLINE_STROKE_COLOR,
                 OUTLINE_STROKE_WIDTH,
                 OUTLINE_STROKE_NOISE
+            )
+        );
+
+        // MOSS DOTS along the upper outline
+        this.add(
+            new MossDots(
+                pointArray[0].filter((p) => p.y < -height * 0.25),
+                xOffset,
+                yOffset,
+                seed * 100,
+                0.3,
+                0.85
             )
         );
 

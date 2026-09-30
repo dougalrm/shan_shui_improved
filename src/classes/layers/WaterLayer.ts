@@ -37,12 +37,17 @@ export default class WaterLayer extends Layer {
 
         for (let i = 0; i < waveClusters; i++) {
             const xk = (PRNG.random(-0.5, 0.5) * width) / 8;
-            const lk = Math.floor(width * PRNG.random(0.25, 0.5));
+            const lk = Math.floor(width * PRNG.random(0.1, 0.35));
             const pointNum = Math.floor((2 * lk) / resolution);
             const currentCluster = new Array<Point>(pointNum);
-            const color = COLORNOALFA + PRNG.random(0.3, 0.6).toFixed(3) + ")";
+            // Ripples fade the further they are from the shore, into untouched paper
+            const fade = 1 - i / waveClusters;
+            const color =
+                COLORNOALFA +
+                (PRNG.random(0.15, 0.35) * fade + 0.05).toFixed(3) +
+                ")";
 
-            yk += PRNG.random(0, 5);
+            yk += PRNG.random(2, 8);
 
             for (let j = 0; j < pointNum; j++) {
                 const step = -lk + j * resolution;
@@ -56,7 +61,7 @@ export default class WaterLayer extends Layer {
                 );
             }
 
-            this.add(new Stroke(currentCluster, color, color));
+            this.add(new Stroke(currentCluster, color, color, 1 + fade * 0.6));
         }
     }
 }

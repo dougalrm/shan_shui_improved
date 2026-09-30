@@ -1,5 +1,6 @@
 import Element from "../Element";
 import House from "../structures/House";
+import MossDots from "../structures/MossDots";
 import Layer from "../Layer";
 import MiddleMountainFoot from "../structures/MiddleMountainFoot";
 import PRNG from "../PRNG";
@@ -10,7 +11,6 @@ import Rock from "../structures/Rock";
 import Stroke from "../elements/Stroke";
 import Structure from "../Structure";
 import Texture from "../structures/Texture";
-import TransmissionTower from "../structures/TransmissionTower";
 import Tree01 from "../structures/Tree01";
 import Tree02 from "../structures/Tree02";
 import Tree03 from "../structures/Tree03";
@@ -143,6 +143,16 @@ export default class MiddleMountainLayer extends Layer {
                 TEXTURE_SIZE,
                 1,
                 PRNG.randomChoice([1, 2, 3])
+            )
+        );
+
+        // MOSS DOTS along the ridge, below the peak where the rim trees are
+        this.add(
+            new MossDots(
+                elementArray[0].filter((p) => Math.abs(p.y) / height > 0.15),
+                xOffset,
+                yOffset,
+                seed
             )
         );
 
@@ -302,29 +312,6 @@ export default class MiddleMountainLayer extends Layer {
             () => true,
             this
         );
-        // TRANSMISSION TOWER
-
-        generateVegetate(
-            elementArray,
-            function (x, y) {
-                return new TransmissionTower(x + xOffset, y + yOffset);
-            },
-            function (i, j) {
-                const noise = Perlin.noise(
-                    i * 0.2,
-                    j * 0.05,
-                    seed + 20 * Math.PI
-                );
-                return (
-                    i % 2 === 0 &&
-                    (j === 1 || j === elementArray[i].length - 2) &&
-                    Math.pow(noise, 4) < 0.002
-                );
-            },
-            () => true,
-            this
-        );
-
         // BOTTOM_ ROCK
         generateVegetate(
             elementArray,

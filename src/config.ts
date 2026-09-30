@@ -32,8 +32,8 @@ export const config = {
                 color: "none",
             },
             outline: {
-                fillColor: "rgba(100, 100, 100, 0.3)",
-                color: "rgba(100, 100, 100, 0.3)",
+                fillColor: "rgba(100, 100, 100, 0.42)",
+                color: "rgba(100, 100, 100, 0.42)",
                 strokeWidth: 3,
                 strokeNoise: 1,
             },
@@ -67,8 +67,8 @@ export const config = {
                 strokeColor: "none",
             },
             outline: {
-                fillColor: "rgba(100, 100, 100, 0.3)",
-                color: "rgba(100, 100, 100, 0.3)",
+                fillColor: "rgba(100, 100, 100, 0.45)",
+                color: "rgba(100, 100, 100, 0.45)",
                 strokeWidth: 3,
                 strokeNoise: 1,
             },
@@ -83,7 +83,7 @@ export const config = {
             },
         },
         water: {
-            defaultWaveClusters: 10, // Number of clusters of waves.
+            defaultWaveClusters: 5, // Number of clusters of waves. Water is mostly left as empty paper
             colorNoAlfa: "rgba(100, 100, 100,", // color without the alpha. Need to add alfa value and closing bracket
         },
     },

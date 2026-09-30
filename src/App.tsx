@@ -10,7 +10,11 @@ import React, {
 import Renderer from "./classes/Renderer";
 import { ScrollableCanvas } from "./ui/ScrollableCanvas";
 import { SettingPanel } from "./ui/SettingPanel";
+import ScrollEngine from "./classes/ScrollEngine";
 import { debounce } from "./utils/utils";
+
+/** A held arrow key scrolls this many times the step size per second */
+const HOLD_SPEED_FACTOR = 6;
 
 /**
  * Main application component.
@@ -40,7 +44,8 @@ export const App = (): ReactElement => {
 
     // Refs
     const rendererRef = useRef(new Renderer());
-    const timeoutRef = useRef<number | NodeJS.Timeout>(0);
+    const engineRef = useRef(new ScrollEngine());
+    const engine = engineRef.current;
 
     // State variables
     const [step, setStep] = useState(100);
@@ -54,7 +59,7 @@ export const App = (): ReactElement => {
         new Range(0, window.innerWidth)
     );
     const [autoScroll, setAutoScroll] = useState<boolean>(false);
-    const [svgContent, setSvgContent] = useState("");
+    const [reloadCount, setReloadCount] = useState(0);
 
     // Cannot be done via setSeed as it will rerender the scene. Look at Menu.tsx
     Renderer.forwardCoverage = window.innerWidth / 2;
@@ -100,54 +105,66 @@ export const App = (): ReactElement => {
         };
     }, []);
 
-    // Handle horizontal scrolling
+    // The engine only reports the position every so often, so React stays out of the animation
+    useEffect(() => {
+        engine.onCommit = setNewPosition;
+        return () => engine.destroy();
+    }, [engine]);
+
+    // Ease the picture by the given distance
     const horizontalScroll = useCallback(
-        (value: number) => {
-            let newValue = newPosition + value;
-
-            if (newValue < 0) {
-                window.alert(
-                    "Already at the beginning of the picture. Move to the right"
-                );
-                return;
-            }
-            if (autoLoad) {
-                setSaveRange(new Range(newValue, newValue + windowWidth));
-            }
-
-            setNewPosition(newValue);
-        },
-        [newPosition, autoLoad, windowWidth]
+        (value: number) => engine.scrollBy(value),
+        [engine]
     );
 
-    // Effect to handle auto-scrolling and arrow key events
+    // Jump to a position without animating, e.g. after a reload
+    const jumpTo = useCallback(
+        (position: number) => {
+            engine.jumpTo(position);
+            setNewPosition(position);
+        },
+        [engine]
+    );
+
+    // Keep the save range on the current view while auto-load is on
     useEffect(() => {
-        const autoScrollCallback = () => {
-            if (autoScroll) {
-                horizontalScroll(step);
-                timeoutRef.current = setTimeout(autoScrollCallback, 1000);
-            }
-        };
-
-        if (autoScroll) {
-            timeoutRef.current = setTimeout(autoScrollCallback, 1000);
+        if (autoLoad) {
+            setSaveRange(new Range(newPosition, newPosition + windowWidth));
         }
+    }, [autoLoad, newPosition, windowWidth]);
 
-        const handleArrowsDown = debounce((event: KeyboardEvent) => {
-            if (event.key === "ArrowLeft") {
-                horizontalScroll(-step);
-            } else if (event.key === "ArrowRight") {
-                horizontalScroll(step);
-            }
-        }, 200);
+    // Auto-scroll drifts at a constant speed: the step size per second
+    useEffect(() => {
+        engine.setAutoSpeed(autoScroll ? step : 0);
+    }, [engine, autoScroll, step]);
 
-        document.addEventListener("keydown", handleArrowsDown);
+    // Holding an arrow key scrolls smoothly for as long as it is down
+    useEffect(() => {
+        const speed = step * HOLD_SPEED_FACTOR;
 
-        return () => {
-            document.removeEventListener("keydown", handleArrowsDown);
-            clearTimeout(timeoutRef.current);
+        const onKeyDown = (event: KeyboardEvent) => {
+            // Let the arrows move the caret when typing in the menu
+            if (event.target instanceof HTMLInputElement) return;
+            if (event.key === "ArrowLeft") engine.setHeldSpeed(-speed);
+            if (event.key === "ArrowRight") engine.setHeldSpeed(speed);
         };
-    }, [autoScroll, step, horizontalScroll]);
+        const onKeyUp = (event: KeyboardEvent) => {
+            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+                engine.setHeldSpeed(0);
+            }
+        };
+        const release = () => engine.setHeldSpeed(0);
+
+        document.addEventListener("keydown", onKeyDown);
+        document.addEventListener("keyup", onKeyUp);
+        window.addEventListener("blur", release);
+        return () => {
+            document.removeEventListener("keydown", onKeyDown);
+            document.removeEventListener("keyup", onKeyUp);
+            window.removeEventListener("blur", release);
+            release();
+        };
+    }, [engine, step]);
 
     return (
         <>
@@ -157,23 +174,23 @@ export const App = (): ReactElement => {
                 horizontalScroll={horizontalScroll}
                 toggleAutoScroll={toggleAutoScroll}
                 newPosition={newPosition}
-                setNewPosition={setNewPosition}
+                setNewPosition={jumpTo}
                 renderer={rendererRef.current}
                 windowWidth={windowWidth}
                 windowHeight={windowHeight}
                 saveRange={saveRange}
                 onChangeSaveRange={onChangeSaveRange}
                 toggleAutoLoad={toggleAutoLoad}
-                setSvgContent={setSvgContent}
+                onReload={() => setReloadCount((count) => count + 1)}
                 initalSeed={initalSeed}
             />
             <ScrollableCanvas
                 windowHeight={windowHeight}
                 newPosition={newPosition}
+                engine={engine}
                 windowWidth={windowWidth}
                 renderer={rendererRef.current}
-                svgContent={svgContent}
-                setSvgContent={setSvgContent}
+                reloadCount={reloadCount}
             />
         </>
     );

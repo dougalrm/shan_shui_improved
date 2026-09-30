@@ -19,7 +19,7 @@ export const Menu = ({
     onChangeSaveRange,
     toggleAutoLoad,
     darkMode,
-    setSvgContent,
+    onReload,
     initalSeed,
 }: IMenu) => {
     // Maximum step value calculation
@@ -78,11 +78,6 @@ export const Menu = ({
         );
         if (userChoice) {
             const currentDate = new Date().getTime().toString();
-            const newRange = new Range(0, windowWidth);
-            const loader = document.getElementById("Loader") as HTMLElement;
-            const loaderText = document.getElementById(
-                "LoaderText"
-            ) as HTMLElement;
             const state = { info: "Updated URL with new seed" };
             const title = `{Shan, Shui}* - ${currentDate}`;
             const url = `/?seed=${currentDate}`;
@@ -103,19 +98,9 @@ export const Menu = ({
             // Remove old frames
             renderer.frames = [];
 
-            // Reset canvas position to 0,windowWidth
+            // Back to the start and let the canvas redraw
             setNewPosition(0);
-
-            loader.classList.remove("hidden");
-            loaderText.innerText = "Creating elements...";
-            renderer
-                .render(newRange)
-                .then(async (newSvgContent) => {
-                    loaderText.innerText = "Rendering layers...";
-                    setSvgContent(newSvgContent);
-                    await new Promise((resolve) => setTimeout(resolve, 0));
-                })
-                .then(() => loader.classList.add("hidden"));
+            onReload();
         }
     };
 

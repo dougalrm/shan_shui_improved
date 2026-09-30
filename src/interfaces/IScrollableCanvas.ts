@@ -1,4 +1,5 @@
 import Renderer from "../classes/Renderer";
+import ScrollEngine from "../classes/ScrollEngine";
 
 /**
  * Represents the properties for the ScrollableCanvas component.
@@ -14,11 +15,18 @@ export interface IScrollableCanvas {
     windowHeight: number;
 
     /**
-     * The new x-coordinate of the canvas.
+     * The x-coordinate of the canvas, updated every so often while scrolling. Used to decide what to render.
      *
      * @type {number}
      */
     newPosition: number;
+
+    /**
+     * Drives the scroll position every frame, so the canvas can move without React
+     *
+     * @type {ScrollEngine}
+     */
+    engine: ScrollEngine;
 
     /**
      * The width of the canvas.
@@ -35,13 +43,9 @@ export interface IScrollableCanvas {
     renderer: Renderer;
 
     /**
-     * SVG string of the main picture
+     * Incremented whenever the picture is redesigned, so the canvas drops the old one
+     *
+     * @type {number}
      */
-    svgContent: string;
-    /**
-     * Set SVG context of the main picture with the new value
-     * @function
-     * @param {string} svg - The SVG content.
-     */
-    setSvgContent: (svg: string) => void;
+    reloadCount: number;
 }

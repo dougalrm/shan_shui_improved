@@ -93,11 +93,10 @@ export interface ISettingPanel {
     toggleAutoLoad: () => void;
 
     /**
-     * Set SVG context of the main picture with the new value
+     * Tells the canvas that the picture was redesigned and has to be redrawn
      * @function
-     * @param {string} svg - The SVG content.
      */
-    setSvgContent: (svg: string) => void;
+    onReload: () => void;
 
     /**
      * The inital seed taken when the page is loaded

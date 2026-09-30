@@ -165,3 +165,25 @@ export const debounce = <F extends (...args: any[]) => void>(
         }, delay);
     };
 };
+
+/**
+ * Throttle function to run a function at most once per interval. Fires immediately
+ * on the first call, so the user gets instant feedback.
+ * @param {Function} func - The function to throttle.
+ * @param {number} interval - The minimum time between calls in milliseconds.
+ * @returns {Function} The throttled function.
+ */
+export const throttle = <F extends (...args: any[]) => void>(
+    func: F,
+    interval: number
+): ((...args: Parameters<F>) => void) => {
+    let lastCall = -Infinity;
+
+    return function (this: any, ...args: Parameters<F>) {
+        const now = performance.now();
+        if (now - lastCall >= interval) {
+            lastCall = now;
+            func.apply(this, args);
+        }
+    };
+};

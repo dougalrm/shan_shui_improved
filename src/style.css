@@ -66,17 +66,32 @@ input.InputSeed {
     margin-right: 3px;
 }
 
-svg#SVG {
+#Canvas {
     position: fixed;
-    left: 0;
-    top: 0;
+    inset: 0;
+    overflow: hidden;
+    /* the paper multiplies with the picture inside, not with the page */
+    isolation: isolate;
 
-    & #Background {
+    & svg {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    /* Scrolled with a CSS transform on its own layer, see ScrollableCanvas */
+    & svg#SVG {
+        overflow: visible;
+        will-change: transform;
+    }
+
+    & svg#Paper {
+        pointer-events: none;
         mix-blend-mode: multiply;
     }
 }
 
-svg#SVG.darkmode {
+#Canvas.darkmode {
     filter: invert(1) sepia(1);
 }
 

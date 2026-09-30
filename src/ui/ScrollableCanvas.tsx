@@ -1,79 +1,181 @@
 import Range from "../classes/Range";
-import React, { useEffect } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { IScrollableCanvas } from "../interfaces/IScrollableCanvas";
+import { RenderedLayer } from "../classes/Renderer";
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+/** Only show the loader if rendering takes longer than this (ms) */
+const LOADER_DELAY = 150;
+/** Longest (ms) to spend adding layers before giving the animation a chance to draw a frame */
+const INSERT_BUDGET = 4;
 
 export const ScrollableCanvas = ({
     windowHeight,
     newPosition,
+    engine,
     windowWidth,
     renderer,
-    svgContent,
-    setSvgContent,
+    reloadCount,
 }: IScrollableCanvas) => {
-    // Effect to render frames within the new range whenever newPosition or windowWidth changes
+    const worldRef = useRef<SVGSVGElement>(null);
+    const pictureRef = useRef<SVGGElement>(null);
+    /** Layer elements currently in the DOM, so only the changes are touched when scrolling */
+    const nodesRef = useRef(new Map<string, SVGGElement>());
+    const reloadRef = useRef(reloadCount);
+
+    const applyPosition = (position: number) => {
+        if (worldRef.current) {
+            // Moving a composited layer is free, the paths aren't repainted
+            worldRef.current.style.transform = `translate3d(${-position}px,0,0)`;
+        }
+    };
+
+    // Follow the engine every frame, bypassing React
+    useLayoutEffect(() => {
+        engine.onFrame = applyPosition;
+        applyPosition(engine.position);
+        return () => {
+            engine.onFrame = undefined;
+        };
+    }, [engine]);
+
+    // Add, remove and reorder only the layers that changed since the last render
+    const syncLayers = async (
+        layers: RenderedLayer[],
+        isCancelled: () => boolean
+    ) => {
+        const picture = pictureRef.current;
+        if (!picture) return;
+
+        const nodes = nodesRef.current;
+        const wanted = new Set(layers.map(({ key }) => key));
+
+        nodes.forEach((node, key) => {
+            if (!wanted.has(key)) {
+                node.remove();
+                nodes.delete(key);
+            }
+        });
+
+        let next: ChildNode | null = picture.firstChild;
+        let deadline = performance.now() + INSERT_BUDGET;
+
+        for (const { key, svg } of layers) {
+            let node = nodes.get(key);
+            if (!node) {
+                const parser = document.createElementNS(SVG_NS, "g");
+                parser.innerHTML = svg;
+                node = parser.firstElementChild as SVGGElement;
+                nodes.set(key, node);
+            }
+            if (node === next) {
+                next = next.nextSibling;
+            } else {
+                picture.insertBefore(node, next);
+            }
+
+            // Parsing big layers all at once would drop frames, so spread it out
+            if (performance.now() > deadline) {
+                await new Promise((resolve) => setTimeout(resolve, 0));
+                if (isCancelled()) return;
+                deadline = performance.now() + INSERT_BUDGET;
+                next = node.nextSibling;
+            }
+        }
+    };
+
+    // Render the visible range plus a margin each side, so scrolling never outruns the content
     useEffect(() => {
-        const newRange = new Range(newPosition, newPosition + windowWidth);
+        let cancelled = false;
         const loader = document.getElementById("Loader") as HTMLElement;
         const loaderText = document.getElementById("LoaderText") as HTMLElement;
+        // Content is kept ready well ahead of the view, so even fast scrolling never outruns it
+        const range = new Range(
+            Math.max(0, newPosition - windowWidth / 2),
+            newPosition + windowWidth * 2
+        );
 
-        // Show loader and update loader text
-        loader.classList.remove("hidden");
-        loaderText.innerText = "Creating elements...";
+        // A reload throws the old picture away and jumps straight to the new one
+        if (reloadRef.current !== reloadCount) {
+            reloadRef.current = reloadCount;
+            nodesRef.current.forEach((node) => node.remove());
+            nodesRef.current.clear();
+        }
 
-        // Render the new range and update SVG content
+        const loaderTimer = setTimeout(() => {
+            loader.classList.remove("hidden");
+            loaderText.innerText = "Creating elements...";
+        }, LOADER_DELAY);
+
         renderer
-            .render(newRange)
-            .then(async (newSvgContent) => {
-                loaderText.innerText = "Rendering layers...";
-                setSvgContent(newSvgContent);
-                await new Promise((resolve) => setTimeout(resolve, 0));
+            .renderLayers(range)
+            .then((layers) => {
+                if (!cancelled) return syncLayers(layers, () => cancelled);
             })
-            .then(() => loader.classList.add("hidden")); // Hide loader after rendering
-    }, [renderer, newPosition, windowWidth, setSvgContent]);
+            .catch(console.error)
+            .finally(() => {
+                clearTimeout(loaderTimer);
+                loader.classList.add("hidden");
+            });
+
+        return () => {
+            cancelled = true;
+            clearTimeout(loaderTimer);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [renderer, newPosition, windowWidth, reloadCount]);
 
     return (
         <div id="ScrollableCanvas">
-            <svg
-                id="SVG"
-                viewBox={`${newPosition} 0 ${windowWidth} ${windowHeight}`}
-            >
-                <defs>
-                    <filter
-                        id="roughpaper"
+            <div id="Canvas">
+                <svg
+                    id="SVG"
+                    ref={worldRef}
+                    width={windowWidth}
+                    height={windowHeight}
+                    viewBox={`0 0 ${windowWidth} ${windowHeight}`}
+                >
+                    <g id="Picture" ref={pictureRef} />
+                </svg>
+                {/* The paper texture never moves, so it is painted once on its own layer */}
+                <svg
+                    id="Paper"
+                    width={windowWidth}
+                    height={windowHeight}
+                    viewBox={`0 0 ${windowWidth} ${windowHeight}`}
+                >
+                    <defs>
+                        <filter
+                            id="roughpaper"
+                            width={windowWidth}
+                            height={windowHeight}
+                        >
+                            <feTurbulence
+                                type="fractalNoise"
+                                stitchTiles="stitch"
+                                baseFrequency="0.02"
+                                numOctaves="5"
+                                result="noise"
+                            />
+                            <feDiffuseLighting
+                                in="noise"
+                                lightingColor="#F0E7D0"
+                                surfaceScale="2"
+                                result="diffLight"
+                            >
+                                <feDistantLight azimuth="45" elevation="60" />
+                            </feDiffuseLighting>
+                        </filter>
+                    </defs>
+                    <rect
+                        id="Background"
+                        filter="url(#roughpaper)"
                         width={windowWidth}
                         height={windowHeight}
-                    >
-                        <feTurbulence
-                            type="fractalNoise"
-                            stitchTiles="stitch"
-                            baseFrequency="0.02"
-                            numOctaves="5"
-                            result="noise"
-                        />
-                        <feDiffuseLighting
-                            in="noise"
-                            lightingColor="#F0E7D0"
-                            surfaceScale="2"
-                            result="diffLight"
-                        >
-                            <feDistantLight azimuth="45" elevation="60" />
-                        </feDiffuseLighting>
-                    </filter>
-                </defs>
-                <g
-                    id="Picture"
-                    width={windowWidth}
-                    height={windowHeight}
-                    dangerouslySetInnerHTML={{ __html: svgContent }}
-                />
-                <rect
-                    id="Background"
-                    filter="url(#roughpaper)"
-                    width={windowWidth}
-                    height={windowHeight}
-                />
-            </svg>
-            <div id="Loader">
+                    />
+                </svg>
+            </div>
+            <div id="Loader" className="hidden">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="200"

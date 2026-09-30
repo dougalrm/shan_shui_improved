@@ -7,6 +7,9 @@ import { LayerType } from "../types/LayerType";
  * Represents a layer of terrain with SVG elements.
  */
 export default class Layer extends Structure implements ILayer {
+    /** Layers never change once created, so the rendered SVG is kept and reused */
+    private rendered?: Promise<string>;
+
     /**
      * Initializes a new instance with specified coordinates and tag.
      *
@@ -30,6 +33,15 @@ export default class Layer extends Structure implements ILayer {
      * @return {Promise<string>} A promise that resolves to the rendered layer as an SVG string.
      */
     public render(frameNum: number, layerNum: number): Promise<string> {
+        if (!this.rendered) {
+            this.rendered = this.renderInWorker(frameNum, layerNum);
+            // Don't cache failures so the next render can retry
+            this.rendered.catch(() => (this.rendered = undefined));
+        }
+        return this.rendered;
+    }
+
+    private renderInWorker(frameNum: number, layerNum: number): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             const worker = new Worker(workerBlobURL);
 

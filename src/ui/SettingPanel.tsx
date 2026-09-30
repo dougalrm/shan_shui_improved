@@ -16,7 +16,7 @@ export const SettingPanel = ({
     saveRange,
     onChangeSaveRange,
     toggleAutoLoad,
-    setSvgContent,
+    onReload,
     initalSeed,
 }: ISettingPanel) => {
     // State variables
@@ -68,7 +68,7 @@ export const SettingPanel = ({
         const darkModeButton = document.getElementById(
             "Darkmode"
         ) as HTMLElement;
-        const svg = document.getElementById("SVG") as HTMLElement;
+        const svg = document.getElementById("Canvas") as HTMLElement;
         const leftScroll = document.getElementById("LeftScroll") as HTMLElement;
         const rightScroll = document.getElementById(
             "RightScroll"
@@ -151,7 +151,7 @@ export const SettingPanel = ({
                 onChangeSaveRange={onChangeSaveRange}
                 toggleAutoLoad={toggleAutoLoad}
                 darkMode={darkMode}
-                setSvgContent={setSvgContent}
+                onReload={onReload}
                 initalSeed={initalSeed}
             />
         </>

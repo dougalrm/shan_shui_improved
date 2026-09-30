@@ -5,6 +5,12 @@ import { config } from "../config";
 
 const TAG_ORDER = config.renderer.tagOrder;
 
+/** A layer that was rendered to an SVG string, identified by a stable key */
+export interface RenderedLayer {
+    key: string;
+    svg: string;
+}
+
 export default class Renderer {
     /** Keeping the frames array with frames ready to be render in current scenne */
     frames: Frame[] = [];
@@ -21,12 +27,32 @@ export default class Renderer {
      */
     static visibleRange = new Range(0, 0);
 
+    /** Renders are chained so a slow one can never be overtaken by (or interleave with) a newer one */
+    private queue: Promise<unknown> = Promise.resolve();
+
     /**
      * Render picture based on the given range.
      * @param range - The new range of the canvas
-     * @return {Promise<string | undefined>} The svg content or undefined if no new frame is created
+     * @return {Promise<string>} The svg content of all layers visible in the range
      */
     public async render(range: Range): Promise<string> {
+        const layers = await this.renderLayers(range);
+        return layers.map(({ svg }) => svg).join("\n");
+    }
+
+    /**
+     * Render the layers visible in the given range, in painting order. Layers are only
+     * rendered once, so calling this again for an overlapping range is cheap.
+     * @param range - The range to render
+     * @return {Promise<RenderedLayer[]>} The rendered layers sorted back to front
+     */
+    public renderLayers(range: Range): Promise<RenderedLayer[]> {
+        const result = this.queue.then(() => this.renderRange(range));
+        this.queue = result.catch(() => undefined);
+        return result;
+    }
+
+    private async renderRange(range: Range): Promise<RenderedLayer[]> {
         // Set the new range as a visible range before adjusting it
         const newRange = new Range(range.start, range.end);
 
@@ -79,29 +105,17 @@ export default class Renderer {
             }
         });
 
-        // Chunk layers by number of logical processors
-        const chunkedLayers = [];
-        for (
-            let i = 0;
-            i < visibleLayers.length;
-            i += navigator.hardwareConcurrency
-        ) {
-            chunkedLayers.push(
-                visibleLayers.slice(i, i + navigator.hardwareConcurrency)
-            );
-        }
-
-        // Render all of the visible layers
-        const results = await Promise.all(
-            chunkedLayers.flatMap((layers) =>
-                layers.map(({ layer, frameNum, layerNum }) =>
-                    layer.render(frameNum, layerNum)
-                )
+        // Render all of the visible layers (each one is rendered only once, see Layer.render)
+        const svgs = await Promise.all(
+            visibleLayers.map(({ layer, frameNum, layerNum }) =>
+                layer.render(frameNum, layerNum)
             )
         );
 
-        // Return SVG string
-        return results.join("\n");
+        return visibleLayers.map(({ frameNum, layerNum }, i) => ({
+            key: `frame${frameNum}-layer${layerNum}`,
+            svg: svgs[i],
+        }));
     }
 
     /**

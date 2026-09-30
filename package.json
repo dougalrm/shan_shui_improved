@@ -24,9 +24,11 @@
         "@types/react": "^19.0.8",
         "@types/react-dom": "^19.0.3",
         "@zamiell/typedoc-plugin-not-exported": "^0.3.0",
+        "ajv": "^8.20.0",
         "typedoc": "^0.27.6",
         "typedoc-plugin-rename-defaults": "^0.7.2",
-        "typedoc-theme-hierarchy": "^5.0.4"
+        "typedoc-theme-hierarchy": "^5.0.4",
+        "typescript": "~5.8.3"
     },
     "browserslist": {
         "production": [

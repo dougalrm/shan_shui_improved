@@ -15,6 +15,7 @@ const BACKGROUND_MOUNTAIN_YLOCATION_MIN =
 const BACKGROUND_MOUNTAIN_YLOCATION_MAX =
     config.designer.backgroundMountain.yLocation.max;
 const BOAT_PROBABILITY = config.designer.boat.probability;
+const BOATS_PER_CHUNK = config.designer.boat.perChunk;
 const BOAT_WIDTH = config.designer.boat.width;
 const BOAT_Y_MAX = config.designer.boat.y.max;
 const BOAT_Y_MIN = config.designer.boat.y.min;
@@ -457,11 +458,13 @@ export default class Designer {
             }
         });
 
+        let boats = 0;
         // Generate Boats: mostly on the open water of the quiet stretches
         for (let x = range.start; x < range.end; x += X_STEP) {
-            // A few boats, not a fleet: open water is mostly left empty
-            const chance = BOAT_PROBABILITY * (0.1 + 0.4 * (1 - intensity(x)));
-            if (PRNG.random() < chance) {
+            // Boats on the open water: more where it is quiet, a few even among the
+            // massifs, and never a fleet (at most BOATS_PER_CHUNK)
+            const chance = BOAT_PROBABILITY * (0.35 + 0.65 * (1 - intensity(x)));
+            if (boats < BOATS_PER_CHUNK && PRNG.random() < chance) {
                 const y = PRNG.random(BOAT_Y_MIN, BOAT_Y_MAX);
                 const boatChunk = new SketchLayer("boat", x, y, BOAT_WIDTH);
 
@@ -470,6 +473,7 @@ export default class Designer {
                     this.isOnOpenWater(boatChunk)
                 ) {
                     this.plan.push(boatChunk);
+                    boats++;
                 }
             }
         }

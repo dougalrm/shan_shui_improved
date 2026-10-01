@@ -355,6 +355,14 @@ The thatched pavilions (茅亭) on foreground hills read as shacks.
 - **The banks:** framed by the broken rock patches and bank strokes as before.
 - **The source:** the gully lines are gone. Dark boulders mark where the water rises.
 
+### 23. More boats on the water
+*(see git log: "More boats on the water")*
+
+- **The problem:** boats had become rare: 20, 14 and 4 per 30 chunks on seeds 7, 3 and abc. Two earlier changes compounded. The chance had been cut to avoid fleets, and then the open-water check rejected more spots, leaving massif-heavy stretches with almost none.
+- **The chance:** raised everywhere, more on quiet open water, and capped at four boats per chunk so fleets can't return.
+- **Result:** 36, 29 and 9 on the same seeds, still none on a mountain. Seed abc stays lower because it is mostly massifs with little open water.
+- **Drawing order:** boats are now drawn after the mist and cloud bands, so a boat near a mountain's misty foot stays crisp. Since they only go on open water, they never overlap a mountain.
+
 ---
 
 ## Known limits and ideas not yet built

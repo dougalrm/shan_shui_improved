@@ -143,7 +143,9 @@ export const config = {
         /** order in which the layers should be render */
         tagOrder: {
             backgroundMountain: 1,
-            boat: 2,
+            // Boats only go on open water, so they can be drawn after the mist and cloud
+            // bands (which would veil them) without ever overlapping a mountain
+            boat: 4.6,
             water: 3,
             middleMountain: 4,
             clouds: 4.5,
@@ -208,6 +210,7 @@ export const config = {
         },
         boat: {
             probability: 0.2, // Probability of generating a boat chunk.
+            perChunk: 4, // At most this many boats per chunk, so there is never a fleet
             width: 120, // The width of the boat
             y: {
                 min: 300,

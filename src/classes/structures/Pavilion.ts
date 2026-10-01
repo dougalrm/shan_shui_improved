@@ -30,7 +30,19 @@ export default class Pavilion extends Structure {
         const h0 = height * p;
         const h1 = height * (1 - p);
 
-        this.add(new Hut(xOffset, yOffset - height, h0, strokeWidth));
+        // Thatch hatching thins with the size, so a small roof isn't a dark mass
+        this.add(
+            new Hut(
+                xOffset,
+                yOffset - height,
+                h0,
+                strokeWidth,
+                Math.round((strokeWidth / 180) * 180)
+            )
+        );
+        // The figures inside are sized to the pavilion (they were drawn the same size whatever
+        // the pavilion's size)
+        const figure = (height / 70) * 0.42;
 
         this.add(
             new Box(
@@ -70,7 +82,7 @@ export default class Pavilion extends Structure {
                         ),
                     yOffset,
                     PRNG.randomChoice([true, false]),
-                    0.42
+                    figure
                 )
             );
         } else if (people === 2) {
@@ -83,7 +95,7 @@ export default class Pavilion extends Structure {
                         ),
                     yOffset,
                     false,
-                    0.42
+                    figure
                 )
             );
             this.add(
@@ -92,7 +104,7 @@ export default class Pavilion extends Structure {
                         PRNG.normalizedRandom(strokeWidth / 5, strokeWidth / 4),
                     yOffset,
                     true,
-                    0.42
+                    figure
                 )
             );
         }

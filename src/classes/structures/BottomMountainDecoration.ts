@@ -197,19 +197,30 @@ export default class BottomMountainDecoration extends Structure {
             );
         }
 
-        // Add some pavilion
+        // Now and then a small thatched pavilion (茅亭) to sit in and take in the view. Sized
+        // for the figures in it, and only where the flat top is wide enough to hold it, kept
+        // within it, so it never hangs off the edge of the hill.
         if (PRNG.random() < PAVILION_CHANCE && treeType !== "Tree07") {
-            this.add(
-                new Pavilion(
-                    xOffset +
-                        PRNG.normalizedRandom(bounding.xMin, bounding.xMax),
-                    yOffset + (bounding.yMin + bounding.yMax) / 2 + 20,
-                    PRNG.random(),
-                    PRNG.normalizedRandom(70, 90),
-                    PRNG.normalizedRandom(120, 160),
-                    PRNG.random()
-                )
-            );
+            const height = PRNG.normalizedRandom(44, 58);
+            const width = PRNG.normalizedRandom(76, 100);
+            const margin = width * 0.6;
+
+            if (bounding.xMax - bounding.xMin > margin * 2) {
+                this.add(
+                    new Pavilion(
+                        xOffset +
+                            PRNG.normalizedRandom(
+                                bounding.xMin + margin,
+                                bounding.xMax - margin
+                            ),
+                        yOffset + (bounding.yMin + bounding.yMax) / 2 + 20,
+                        PRNG.random(),
+                        height,
+                        width,
+                        PRNG.random()
+                    )
+                );
+            }
         }
     }
 }

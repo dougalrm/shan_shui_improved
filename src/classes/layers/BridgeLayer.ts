@@ -45,7 +45,7 @@ export default class BridgeLayer extends Layer {
         if (PRNG.random() < 0.3) {
             const x = xOffset + width * PRNG.random(0.3, 0.7);
             this.add(
-                new Man(x, this.deckAt(x, xOffset, yOffset, width) - 1, PRNG.random() < 0.5, 0.4, undefined, true, 1)
+                new Man(x, this.deckAt(x, xOffset, yOffset, width) - 1, PRNG.random() < 0.5, 0.3, undefined, true, 1)
             );
         }
     }

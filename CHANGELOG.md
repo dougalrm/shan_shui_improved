@@ -322,6 +322,21 @@ Counting them in the generator showed only 4 waterfalls in 12 chunks, all small 
 - **How they look:** they are wider (12–18 units, 1.4× on host peaks) and framed by darker washes of rock on both banks, fading down the fall, so the white water stands out the way ink painters frame it. The edges are firmer too.
 - **Result:** 7 waterfalls in the same stretch, falling 95–225 units, and clearly visible.
 
+### 20. Pavilions in proportion, on their hills
+*(see git log: "Pavilions in proportion")*
+
+The thatched pavilions (茅亭) on foreground hills read as shacks.
+
+- **What was wrong:**
+  - **Size:** each was about as big as a hilltop, roughly three times the height of the figures inside, which were drawn the same size whatever the pavilion's size.
+  - **Placement:** each was placed at a random point across the hill's flat top without allowing for its own width, so platforms and railings hung off the edge.
+  - **Frequency:** at a 25% chance per hill, three could end up side by side.
+- **What changed:**
+  - **Size:** pavilions are about a third smaller (44–58 tall, 76–100 wide). The figures inside scale with them, and the roof hatching thins with the size, so a small roof isn't a dark mass.
+  - **Placement:** a pavilion only goes where the flat top is wide enough to hold it, and stays within it.
+  - **Frequency:** the chance per hill is now 15%.
+  - **Other figures:** travellers and figures crossing bridges are drawn at the same smaller scale.
+
 ---
 
 ## Known limits and ideas not yet built

@@ -297,7 +297,7 @@ export const config = {
             },
         },
         bottomMountain: {
-            pavilionChance: 0.25, // Chance of adding pavilion to bottomMountain
+            pavilionChance: 0.15, // Chance of adding pavilion to bottomMountain
         },
     },
     element: {

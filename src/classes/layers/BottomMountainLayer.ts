@@ -232,11 +232,11 @@ export default class BottomMountainLayer extends Layer {
             const x = xOffset + PRNG.normalizedRandom(platform.xMin, platform.xMax);
             const y = yOffset + (platform.yMin + platform.yMax) / 2 + 20;
 
-            this.add(new Man(x, y, facingRight, 0.45, undefined, true, 1));
+            this.add(new Man(x, y, facingRight, 0.32, undefined, true, 1));
 
             if (PRNG.random() < 0.5) {
                 this.add(
-                    new Man(x + behind * 20, y + 2, facingRight, 0.33, undefined, false, 0)
+                    new Man(x + behind * 15, y + 2, facingRight, 0.24, undefined, false, 0)
                 );
             }
         }

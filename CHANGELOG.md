@@ -270,6 +270,14 @@ What `PillarLayer` now does with them:
 - **Mist:** it is now a soft ellipse fading on every side, so it has no edge against a washed sky. This slightly changes the mist in every style.
 - **Seeds:** summer and clear weather paint exactly what they did before this commit, apart from the mist shape.
 
+### 15. Boats on open water, visible rain
+*`7e15bb0`*
+
+- **Boats:**
+  - **The bug:** the collision check used boxes extending *down* from each mountain's base, but mountains rise *up* from it. About one boat in five was placed in front of a mountain, which hid part of it and left the rest looking stranded on the slope.
+  - **The fix:** boats are now checked against the real shape of the mountains, in this chunk and the chunks either side. None now land on a mountain.
+- **Rain:** it was being drawn, but it was too fast and faint to see in motion. It now falls at about half the speed and nearly twice as dark, with longer, thicker drops.
+
 ---
 
 ## Known limits and ideas not yet built

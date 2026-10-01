@@ -6,8 +6,9 @@ import Stroke from "../elements/Stroke";
 import Structure from "../Structure";
 
 /**
- * A waterfall (瀑布): a ribbon of bare silk falling down a mountain face, drawn only by its
- * fine edges and a few faint lines of falling water, disappearing into the mist below.
+ * A waterfall (瀑布): a ribbon of bare silk falling down a mountain face from a lip of rock,
+ * drawn only by its fine edges and a few faint lines of falling water, disappearing into the
+ * mist at the mountain's own foot.
  */
 export default class Waterfall extends Structure {
     /**
@@ -19,14 +20,10 @@ export default class Waterfall extends Structure {
     constructor(x: number, top: number, bottom: number, width: number) {
         super();
 
-        // Two drops with a rock ledge between them (叠泉), the lower one a little aside
-        const ledge = top + (bottom - top) * PRNG.random(0.3, 0.45);
-        const shift = PRNG.randomSign() * width * PRNG.random(0.4, 0.8);
-
-        this.addDrop(x, top, ledge, width);
+        // One continuous fall: a stepped one (叠泉) set aside could line up with the mountain in
+        // front and read as a second fall hanging in the air
+        this.addDrop(x, top, bottom, width);
         this.addLip(x, top, width);
-        this.addDrop(x + shift, ledge, bottom, width * 1.25);
-        this.addLip(x + shift, ledge, width * 1.25);
     }
 
     /** One falling sheet of water: bare silk between fine, broken edges */

@@ -355,7 +355,8 @@ export default class MiddleMountainLayer extends Layer {
                 new Waterfall(
                     source.x + xOffset,
                     source.y + yOffset + height * 0.12,
-                    yOffset + 30,
+                    // Ends in the mist at this mountain's own foot
+                    yOffset - height * 0.05,
                     PRNG.random(9, 14) * (isHostPeak ? 1.4 : 1)
                 )
             );

@@ -504,18 +504,19 @@ body.darkmode div#Shortcuts .Panel {
         animation-duration: 22s;
     }
 
+    /* Slow enough to see at full frame rate: fast, faint rain all but vanishes in motion */
     &.rain > div {
         background-color: var(--ink);
-        opacity: 0.22;
+        opacity: 0.32;
     }
 
     &.rain > .Far {
-        animation-duration: 1.6s;
+        animation-duration: 3.4s;
     }
 
     &.rain > .Near {
-        opacity: 0.3;
-        animation-duration: 1s;
+        opacity: 0.5;
+        animation-duration: 2.2s;
     }
 }
 

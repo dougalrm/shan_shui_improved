@@ -182,6 +182,31 @@ export default class Designer {
     }
 
     /**
+     * Whether a boat is out on open water: not in front of any mountain or hill, taking their
+     * real shape (they rise up from their base, which the plan's boxes don't describe), here or
+     * in the chunks either side. Otherwise the mountain, drawn later, hides part of the boat
+     * and the rest looks stranded on the slope.
+     * @param {SketchLayer} boat - Where the boat would go
+     * @returns {boolean} true if it is on open water
+     */
+    private isOnOpenWater(boat: SketchLayer): boolean {
+        const margin = 15;
+        const all = [...this.neighbours, ...this.plan, ...this.rightNeighbours];
+
+        return all.every((layer) => {
+            if (layer.tag !== "middleMountain" && layer.tag !== "bottomMountain") {
+                return true;
+            }
+            const overlapsX =
+                boat.x + boat.width > layer.x - layer.width / 2 - margin &&
+                boat.x < layer.x + layer.width / 2 + margin;
+            const overlapsY =
+                boat.y > layer.y - layer.height - margin && boat.y < layer.y + 30;
+            return !(overlapsX && overlapsY);
+        });
+    }
+
+    /**
      * Checks if a new layer can fit within the existing plan without colliding with other layers.
      *
      * @param {SketchLayer} newLayer - The new layer to check.
@@ -440,12 +465,8 @@ export default class Designer {
                 const boatChunk = new SketchLayer("boat", x, y, BOAT_WIDTH);
 
                 if (
-                    this.canFit(boatChunk, 10, 100, [
-                        "boat",
-                        "water",
-                        "middleMountain",
-                        "bottomMountain",
-                    ])
+                    this.canFit(boatChunk, 10, 100, ["boat", "water"]) &&
+                    this.isOnOpenWater(boatChunk)
                 ) {
                     this.plan.push(boatChunk);
                 }

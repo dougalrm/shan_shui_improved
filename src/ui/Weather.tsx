@@ -18,8 +18,8 @@ const snowflake = (big: boolean) => (x: number, y: number) =>
     ).toFixed(1)}' fill-opacity='${(0.55 + Math.random() * 0.45).toFixed(2)}'/>`;
 
 const raindrop = (x: number, y: number) => {
-    const length = 12 + Math.random() * 14;
-    return `<line x1='${x.toFixed(1)}' y1='${y.toFixed(1)}' x2='${(x - length * 0.22).toFixed(1)}' y2='${(y + length).toFixed(1)}' stroke='black' stroke-width='0.9' stroke-opacity='${(0.35 + Math.random() * 0.5).toFixed(2)}'/>`;
+    const length = 14 + Math.random() * 18;
+    return `<line x1='${x.toFixed(1)}' y1='${y.toFixed(1)}' x2='${(x - length * 0.22).toFixed(1)}' y2='${(y + length).toFixed(1)}' stroke='black' stroke-width='1.2' stroke-linecap='round' stroke-opacity='${(0.45 + Math.random() * 0.5).toFixed(2)}'/>`;
 };
 
 /**

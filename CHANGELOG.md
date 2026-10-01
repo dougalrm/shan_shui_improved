@@ -30,7 +30,7 @@ Everything changed since this fork was taken from upstream [Megaemce/shan_shui](
 - Ignores lockfiles, env files, logs, caches and editor files.
 
 ### Checks and tools in `scripts/`
-*(see git log: "Checks and tools for working on the painting")*
+*`d5b02eb`*
 
 - **What changed:** the test scripts used during this work are now part of the repo, as npm scripts (see `scripts/README.md`):
   - `npm run check` runs type checks, then paints four pictures in Node. It checks that chunks come out the same in any painting order and contain no `NaN` or `undefined`, and lists which kinds of layer changed against `scripts/baseline.json` (`--update` accepts the changes).

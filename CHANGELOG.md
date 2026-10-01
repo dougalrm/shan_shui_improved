@@ -338,7 +338,7 @@ The thatched pavilions (茅亭) on foreground hills read as shacks.
   - **Other figures:** travellers and figures crossing bridges are drawn at the same smaller scale.
 
 ### 21. Waterfalls stay on their mountain
-*(see git log: "Waterfalls stay on their mountain")*
+*`f0d2873`*
 
 - **What was wrong:** on mountains without a saddle, a waterfall started at the summit and its gully lines climbed above the peak into the sky. The darker rock beside the water was a uniform band, so falls read as vertical stripes.
 - **Where they start:** water no longer comes off a summit. Without a saddle, a fall emerges from a cleft well down the face, below the high point.

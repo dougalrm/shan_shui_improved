@@ -363,6 +363,18 @@ The thatched pavilions (茅亭) on foreground hills read as shacks.
 - **Result:** 36, 29 and 9 on the same seeds, still none on a mountain. Seed abc stays lower because it is mostly massifs with little open water.
 - **Drawing order:** boats are now drawn after the mist and cloud bands, so a boat near a mountain's misty foot stays crisp. Since they only go on open water, they never overlap a mountain.
 
+### 24. Four kinds of boat
+*(see git log: "Four kinds of boat")*
+
+There used to be one boat: a skiff with a crouching fisherman. Now there are four river craft from classical painting, all on the same hull and in the same ink:
+
+| Boat | Share | What it shows |
+|---|---|---|
+| Fisherman's skiff | 40% | A fisherman crouched with his rod, as before |
+| Sampan (篷船) | 25% | An arched woven-mat canopy amidships, with a boatman sculling a long oar at the stern |
+| Sailing junk (帆船) | 15% | A mast with a battened sail, a figure at the helm, and a faint wake |
+| Punt | 20% | A boatman standing at the stern pushing a long pole into the water. 60% carry a seated passenger in a broad hat, with a faint wake |
+
 ---
 
 ## Known limits and ideas not yet built

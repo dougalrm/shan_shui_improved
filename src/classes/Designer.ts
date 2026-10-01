@@ -55,6 +55,7 @@ const HOST_PEAK_BASE_MIN = config.designer.hostPeak.base.min;
 const HOST_PEAK_BASE_MAX = config.designer.hostPeak.base.max;
 const HOST_PEAK_SPACING = config.designer.hostPeak.spacing;
 const INSCRIPTION_THRESHOLD = config.designer.inscription.threshold;
+const FRAMING_THRESHOLD = config.designer.framing.threshold;
 const INSCRIPTION_Y = config.designer.inscription.y;
 const CHUNK_WIDTH = config.world.chunkWidth;
 const BLEND_THRESHOLD = config.layers.pillar.blendThreshold;
@@ -145,6 +146,22 @@ export default class Designer {
             if (value(index - d) >= here || value(index + d) > here) return false;
         }
         return true;
+    }
+
+    /**
+     * Whether chunk `index` gets an old pine or a boulder in the very front. Like inscriptions,
+     * decided from the picture's noise alone: only where it peaks over the chunk either side,
+     * so they are never in neighbouring chunks, and more readily in the scenes that ask for it.
+     * @param {number} index - The chunk number
+     * @returns {boolean} whether to frame the view here
+     */
+    static wantsFraming(index: number): boolean {
+        const value = (i: number) => Perlin.noise(i * 0.83 + 0.3, 37.7);
+        const here = value(index);
+        const middle = (index + 0.5) * CHUNK_WIDTH;
+
+        if (here < FRAMING_THRESHOLD - 0.25 * Scenes.profile(middle).framing) return false;
+        return value(index - 1) < here && value(index + 1) <= here;
     }
 
     /**
@@ -573,6 +590,13 @@ export default class Designer {
         this.plan.push(new SketchLayer("bank", range.start, 0, range.length));
         // And the far shore along the horizon
         this.plan.push(new SketchLayer("farShore", range.start, 0, range.length));
+
+        // Now and then an old pine or a boulder in the very front, framing the view
+        if (Designer.wantsFraming(Math.round(range.start / CHUNK_WIDTH))) {
+            this.plan.push(
+                new SketchLayer("framing", PRNG.random(range.start + 100, range.end - 100), 0, 300)
+            );
+        }
 
         // Bands of cloud lying across the massifs at mid-height. Last, so adding them
         // doesn't change anything placed before.

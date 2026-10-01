@@ -174,6 +174,8 @@ export const config = {
             clouds: 4.5,
             bottomMountain: 5,
             bridge: 5.5,
+            // An old pine or a boulder in the very front, framing the view
+            framing: 5.8,
             inscription: 6,
             birds: 7,
         },
@@ -204,10 +206,10 @@ export const config = {
         /** Noise on top of the scenes' intensity, so no two stretches are the same */
         wobble: 0.2,
         profiles: {
-            level: { intensity: 0.05, arc: 0.12, ranges: 6, depth: 0.35, height: 0.6, foreground: 0.6, shore: 5, farShore: 0.85, water: 1.5, clouds: 0.3, temple: 0, pagoda: 0.05, village: 0.4, pavilion: 2.5, travellers: 0.5 },
-            near: { intensity: 0.25, arc: 0.15, ranges: 3, depth: 0.45, height: 0.85, foreground: 2.6, shore: -35, farShore: 0.6, water: 1, clouds: 0.5, temple: 0.1, pagoda: 0.1, village: 1, pavilion: 1, travellers: 1 },
-            deep: { intensity: 0.45, arc: 0.25, ranges: 1.4, depth: 1.35, height: 0.8, foreground: 0.8, shore: 0, farShore: 0.45, water: 0.6, clouds: 1.3, temple: 1, pagoda: 0.3, village: 0.1, pavilion: 0.6, travellers: 0.5 },
-            high: { intensity: 0.5, arc: 0.5, ranges: 1.6, depth: 0.85, height: 1.15, foreground: 0.7, shore: 0, farShore: 0.35, water: 0.5, clouds: 1.8, temple: 0.25, pagoda: 1, village: 0, pavilion: 0.5, travellers: 0.4 },
+            level: { intensity: 0.05, arc: 0.12, ranges: 6, depth: 0.35, height: 0.6, foreground: 0.6, shore: 5, farShore: 0.85, water: 1.5, clouds: 0.3, temple: 0, pagoda: 0.05, village: 0.4, pavilion: 2.5, travellers: 0.5, framing: 0.4 },
+            near: { intensity: 0.25, arc: 0.15, ranges: 3, depth: 0.45, height: 0.85, foreground: 2.6, shore: -35, farShore: 0.6, water: 1, clouds: 0.5, temple: 0.1, pagoda: 0.1, village: 1, pavilion: 1, travellers: 1, framing: 1 },
+            deep: { intensity: 0.45, arc: 0.25, ranges: 1.4, depth: 1.35, height: 0.8, foreground: 0.8, shore: 0, farShore: 0.45, water: 0.6, clouds: 1.3, temple: 1, pagoda: 0.3, village: 0.1, pavilion: 0.6, travellers: 0.5, framing: 0.6 },
+            high: { intensity: 0.5, arc: 0.5, ranges: 1.6, depth: 0.85, height: 1.15, foreground: 0.7, shore: 0, farShore: 0.35, water: 0.5, clouds: 1.8, temple: 0.25, pagoda: 1, village: 0, pavilion: 0.5, travellers: 0.4, framing: 0.7 },
         },
     },
     designer: {
@@ -242,6 +244,10 @@ export const config = {
             chance: 0.3,
             /** Highest and lowest the flock flies */
             y: { min: 70, max: 190 },
+        },
+        framing: {
+            /** How strongly a chunk has to stand out to get a framing pine or boulder, before the scene lowers it (noise, 0-1, see Designer.wantsFraming) */
+            threshold: 0.66,
         },
         inscription: {
             /** How strongly a chunk has to stand out to get one (noise, 0-1, see Designer.wantsInscription) */

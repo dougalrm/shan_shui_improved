@@ -14,4 +14,5 @@ export type LayerType =
     | "clouds"
     | "bank"
     | "farShore"
-    | "sandbar";
+    | "sandbar"
+    | "framing";

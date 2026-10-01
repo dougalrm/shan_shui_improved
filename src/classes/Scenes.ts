@@ -50,6 +50,8 @@ export interface SceneProfile {
     pavilion: number;
     /** Scales the chance of travellers on the road along the bank and on the hills */
     travellers: number;
+    /** How readily an old pine or a boulder frames the view from the very front */
+    framing: number;
 }
 
 const SCENES = config.scenes;

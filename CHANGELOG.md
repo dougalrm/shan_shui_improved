@@ -477,6 +477,17 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
   - **Foreground rocks** taller than 80 get a few axe-cut clusters.
 - **Effect:** the mountains read as different kinds of rock, and the texture follows the slope rather than wrapping round it. Chunk weight is about the same (the heaviest is about 4 MB).
 
+### 31. An old pine or a boulder frames the view
+*(see git log: "Old pines and boulders in the very front frame the view")*
+
+- **What changed:** a new "framing" layer (`FramingLayer`, drawn in front of the foreground hills) places one of three things in the very front, cut off by the bottom edge:
+  - an old pine (古松);
+  - a great boulder with grass and shrubs on top;
+  - a pine rising behind a boulder.
+- **The pine:** a new `OldPine` has a gnarled, leaning trunk with a shadow-side wash and rounded bark plates. Long branches reach out sideways and end in flat pads of needle wheels.
+- **Placement:** `Designer.wantsFraming` uses noise peaks, so framing pieces are never in neighbouring chunks. They come most readily in near scenes (about one per 3–4 chunks) and rarely by level water (scene profile `framing`, `config.designer.framing.threshold`).
+- **Effect:** the near distance now has depth, a classic way to push the landscape back.
+
 ---
 
 ## Known limits and ideas not yet built

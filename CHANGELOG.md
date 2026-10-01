@@ -448,6 +448,22 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
   - `npm run stats` lists each picture's scenes.
   - `npm run shots` now steps one page at a time and prints where each view starts. It used to skip about 1,000 units between views.
 
+### 29. A journey through the landscape
+*(see git log: "A journey through the scenes: road, villages, temples, pagodas")*
+
+- **The problem:** people and buildings were scattered at random, so the scroll had no thread to follow through it.
+- **A road and travellers:** a faint, broken road now runs along the near bank and stops at inlets. Now and then a traveller with a staff walks it, sometimes followed by a young attendant. They are most frequent in the near scenes (`config.layers.bank.travellerChance`).
+- **Villages:** on the near bank, mostly in the near scenes, a few thatched houses stand by the road with trees behind them, a haystack and a low fence (`villageChance`). The groves leave room for them.
+- **Temples:** a new `Temple` structure appears up the valleys of the deep scenes, on a lower ridge of a mountain in the middle distance (`templeChance`). It has:
+  - a two-storey main hall on the highest terrace, with side halls stepping down in front;
+  - sometimes a pagoda beside it;
+  - pines around it, terrace walls, and mist across its lower half.
+
+  A path always climbs to its gate from the foot of the mountain.
+- **Ridge pagodas:** pagodas now stand on a shoulder of the ridge of tall mountains, mostly in the high scenes, as a landmark (`pagodaChance`). The old 2% chance of a pagoda on any mountain remains.
+- **Pavilions** are most likely on the foreground hills by level water. Travellers on the hills follow the scenes too.
+- **How:** each scene's profile gained `temple`, `pagoda`, `village`, `pavilion` and `travellers`. These scale the chances above and blend across borders like the rest.
+
 ---
 
 ## Known limits and ideas not yet built

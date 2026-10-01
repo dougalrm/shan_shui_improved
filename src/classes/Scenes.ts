@@ -40,6 +40,16 @@ export interface SceneProfile {
     water: number;
     /** Scales the chance of cloud bands */
     clouds: number;
+    /** Scales the chance of a temple up a valley */
+    temple: number;
+    /** Scales the chance of a pagoda on a ridge */
+    pagoda: number;
+    /** Scales the chance of a village on the near bank */
+    village: number;
+    /** Scales the chance of a pavilion on a foreground hill */
+    pavilion: number;
+    /** Scales the chance of travellers on the road along the bank and on the hills */
+    travellers: number;
 }
 
 const SCENES = config.scenes;

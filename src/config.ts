@@ -67,6 +67,10 @@ export const config = {
         middleMountain: {
             defaultSeed: 0,
             defaultMiddleVegetation: true,
+            /** Chance of a temple on a mountain in the middle distance, scaled by the scene */
+            templeChance: 0.08,
+            /** Chance of a pagoda on a ridge of a tall mountain, scaled by the scene */
+            pagodaChance: 0.07,
             texture: {
                 size: 200,
             },
@@ -103,6 +107,10 @@ export const config = {
             shore: 800,
             /** How far it rolls up and down */
             swing: 50,
+            /** Chance of a village on a chunk's bank, scaled by the scene */
+            villageChance: 0.8,
+            /** Chance of a traveller on a chunk's road, scaled by the scene */
+            travellerChance: 0.45,
         },
         pillar: {
             /** Columns are this much taller than the classic mountain they replace */
@@ -196,10 +204,10 @@ export const config = {
         /** Noise on top of the scenes' intensity, so no two stretches are the same */
         wobble: 0.2,
         profiles: {
-            level: { intensity: 0.05, arc: 0.12, ranges: 6, depth: 0.35, height: 0.6, foreground: 0.6, shore: 5, farShore: 0.85, water: 1.5, clouds: 0.3 },
-            near: { intensity: 0.25, arc: 0.15, ranges: 3, depth: 0.45, height: 0.85, foreground: 2.6, shore: -35, farShore: 0.6, water: 1, clouds: 0.5 },
-            deep: { intensity: 0.45, arc: 0.25, ranges: 1.4, depth: 1.35, height: 0.8, foreground: 0.8, shore: 0, farShore: 0.45, water: 0.6, clouds: 1.3 },
-            high: { intensity: 0.5, arc: 0.5, ranges: 1.6, depth: 0.85, height: 1.15, foreground: 0.7, shore: 0, farShore: 0.35, water: 0.5, clouds: 1.8 },
+            level: { intensity: 0.05, arc: 0.12, ranges: 6, depth: 0.35, height: 0.6, foreground: 0.6, shore: 5, farShore: 0.85, water: 1.5, clouds: 0.3, temple: 0, pagoda: 0.05, village: 0.4, pavilion: 2.5, travellers: 0.5 },
+            near: { intensity: 0.25, arc: 0.15, ranges: 3, depth: 0.45, height: 0.85, foreground: 2.6, shore: -35, farShore: 0.6, water: 1, clouds: 0.5, temple: 0.1, pagoda: 0.1, village: 1, pavilion: 1, travellers: 1 },
+            deep: { intensity: 0.45, arc: 0.25, ranges: 1.4, depth: 1.35, height: 0.8, foreground: 0.8, shore: 0, farShore: 0.45, water: 0.6, clouds: 1.3, temple: 1, pagoda: 0.3, village: 0.1, pavilion: 0.6, travellers: 0.5 },
+            high: { intensity: 0.5, arc: 0.5, ranges: 1.6, depth: 0.85, height: 1.15, foreground: 0.7, shore: 0, farShore: 0.35, water: 0.5, clouds: 1.8, temple: 0.25, pagoda: 1, village: 0, pavilion: 0.5, travellers: 0.4 },
         },
     },
     designer: {

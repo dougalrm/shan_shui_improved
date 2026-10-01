@@ -8,6 +8,8 @@ import Pagoda from "../structures/Pagoda";
 import Perlin from "../Perlin";
 import Point from "../Point";
 import Rock from "../structures/Rock";
+import Scenes from "../Scenes";
+import Temple from "../structures/Temple";
 import Stroke from "../elements/Stroke";
 import Structure from "../Structure";
 import Texture from "../structures/Texture";
@@ -39,6 +41,8 @@ const RIM_COLORNOALFA = config.layers.middleMountain.rim.colorNoAlfa;
 const TEXTURE_SIZE = config.layers.middleMountain.texture.size;
 const TOP_COLORNOALFA = config.layers.middleMountain.top.colorNoAlfa;
 const HOST_PEAK_HEIGHT_MIN = config.designer.hostPeak.height.min;
+const TEMPLE_CHANCE = config.layers.middleMountain.templeChance;
+const PAGODA_CHANCE = config.layers.middleMountain.pagodaChance;
 
 /**
  * Represents a mountainous landscape with various elements.
@@ -355,19 +359,63 @@ export default class MiddleMountainLayer extends Layer {
             this
         );
 
-        // PATH zigzagging up the face, through the nested ridges from the foot upwards
-        if (height > 200 && PRNG.random() < 0.3) {
-            let j = Math.floor(PRNG.random(elementDetails * 0.3, elementDetails * 0.7));
+        const scene = Scenes.profile(xOffset);
+        const isHost = height >= HOST_PEAK_HEIGHT_MIN;
+
+        // A TEMPLE up the valley, mostly in the deep scenes, on a mountain in the middle
+        // distance: on one of the lower ridges, with a path climbing to it from the foot
+        const templeRing = Math.floor(PRNG.random(4, 6.99));
+        const templeJ = Math.floor(PRNG.random(elementDetails * 0.35, elementDetails * 0.65));
+        const hasTemple =
+            !isHost &&
+            height > 180 &&
+            yOffset > 420 &&
+            yOffset < 600 &&
+            PRNG.random() < TEMPLE_CHANCE * scene.temple;
+
+        // PATH zigzagging up the face, through the nested ridges from the foot upwards: to the
+        // temple when there is one, otherwise now and then over the mountain
+        if (hasTemple || (height > 200 && PRNG.random() < 0.3)) {
+            let j = hasTemple
+                ? templeJ + PRNG.randomSign() * 3
+                : Math.floor(PRNG.random(elementDetails * 0.3, elementDetails * 0.7));
             let direction = PRNG.randomSign();
             const turns: Point[] = [];
+            const top = hasTemple ? templeRing + 1 : 2;
 
-            for (let i = elementNumber - 1; i >= 2; i--) {
+            for (let i = elementNumber - 1; i >= top; i--) {
                 const point = elementArray[i][j];
                 turns.push(new Point(point.x + xOffset, point.y + yOffset));
                 j = Math.max(2, Math.min(elementDetails - 3, j + direction * 3));
                 direction = -direction;
             }
+            if (hasTemple) {
+                const gate = elementArray[templeRing][templeJ];
+                turns.push(new Point(gate.x + xOffset, gate.y + yOffset));
+            }
             this.add(new Path(turns));
+        }
+
+        if (hasTemple) {
+            const site = elementArray[templeRing][templeJ];
+            this.add(new Temple(site.x + xOffset, site.y + yOffset, PRNG.random(30, 44)));
+        }
+
+        // A PAGODA on a shoulder of the ridge, mostly in the high scenes: a landmark the eye
+        // finds from far off
+        if (!isHost && height > 250 && PRNG.random() < PAGODA_CHANCE * scene.pagoda) {
+            const ridge = elementArray[1];
+            const [from, to] = PRNG.randomChoice([
+                [0.22, 0.38],
+                [0.62, 0.78],
+            ]);
+            let j = Math.floor(elementDetails * from);
+            for (let k = j; k < elementDetails * to; k++) {
+                if (ridge[k].y < ridge[j].y) j = k;
+            }
+            this.add(
+                new Pagoda(ridge[j].x + xOffset, ridge[j].y + yOffset + 4, PRNG.random(14, 20), PRNG.randomChoice([5, 7]))
+            );
         }
 
         // WATERFALL: nearly always on a host peak, often on other tall mountains. Water gathers
@@ -375,7 +423,7 @@ export default class MiddleMountainLayer extends Layer {
         // below the high point - and runs down the slope. Its course is traced down through the
         // mountain's nested ridges, drifting a little at each, so it follows the ground as a
         // cascade instead of dropping straight like water off a cliff.
-        const isHostPeak = height >= HOST_PEAK_HEIGHT_MIN;
+        const isHostPeak = isHost;
         if (height > 250 && PRNG.random() < (isHostPeak ? 0.9 : 0.45)) {
             const ridge = elementArray[0];
             const foot = yOffset - height * 0.05;

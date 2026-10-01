@@ -3,6 +3,7 @@ import Structure from "../Structure";
 import PRNG from "../PRNG";
 import Pavilion from "./Pavilion";
 import Rock from "./Rock";
+import Scenes from "../Scenes";
 import Tree02 from "./Tree02";
 import Tree04 from "./Tree04";
 import Tree05 from "./Tree05";
@@ -197,10 +198,13 @@ export default class BottomMountainDecoration extends Structure {
             );
         }
 
-        // Now and then a small thatched pavilion (茅亭) to sit in and take in the view. Sized
-        // for the figures in it, and only where the flat top is wide enough to hold it, kept
-        // within it, so it never hangs off the edge of the hill.
-        if (PRNG.random() < PAVILION_CHANCE && treeType !== "Tree07") {
+        // Now and then a small thatched pavilion (茅亭) to sit in and take in the view, most
+        // often looking out over level water. Sized for the figures in it, and only where the
+        // flat top is wide enough to hold it, kept within it, so it never hangs off the edge
+        // of the hill.
+        const pavilionChance =
+            PAVILION_CHANCE * Scenes.profile(xOffset + (bounding.xMin + bounding.xMax) / 2).pavilion;
+        if (PRNG.random() < pavilionChance && treeType !== "Tree07") {
             const height = PRNG.normalizedRandom(44, 58);
             const width = PRNG.normalizedRandom(76, 100);
             const margin = width * 0.6;

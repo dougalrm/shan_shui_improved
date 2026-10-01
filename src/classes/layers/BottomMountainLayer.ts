@@ -6,6 +6,7 @@ import MossDots from "../structures/MossDots";
 import PRNG from "../PRNG";
 import Perlin from "../Perlin";
 import Point from "../Point";
+import Scenes from "../Scenes";
 import Stroke from "../elements/Stroke";
 import Texture from "../structures/Texture";
 import { calculateBoundingBox } from "../../utils/polytools";
@@ -226,7 +227,7 @@ export default class BottomMountainLayer extends Layer {
 
         // A TRAVELLER with a staff crossing the platform, sometimes with a young attendant
         // following behind, as in so many landscapes
-        if (PRNG.random() < TRAVELLER_CHANCE) {
+        if (PRNG.random() < TRAVELLER_CHANCE * Scenes.profile(xOffset).travellers) {
             const facingRight = PRNG.randomChoice([true, false]);
             const behind = facingRight ? -1 : 1;
             const x = xOffset + PRNG.normalizedRandom(platform.xMin, platform.xMax);

@@ -313,7 +313,7 @@ What `PillarLayer` now does with them:
 - **Downloads:** exports use the gentler texture too.
 
 ### 19. Waterfalls you can actually see
-*(see git log: "Waterfalls you can see")*
+*`bf33803`*
 
 Counting them in the generator showed only 4 waterfalls in 12 chunks, all small (falls of 51–190 units, about 10 wide) and faint.
 

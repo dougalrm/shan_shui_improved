@@ -4,10 +4,13 @@ import { IScrollableCanvas } from "../interfaces/IScrollableCanvas";
 import { RenderedLayer } from "../classes/Renderer";
 import { runWhenIdle } from "../utils/idle";
 import { usePanGestures } from "./usePanGestures";
-import { inkDefs } from "../utils/ink";
+import { inkDefs, WATER_FADE_TOP } from "../utils/ink";
+import { config } from "../config";
 import { Weather } from "./Weather";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+const WORLD_HEIGHT = config.world.height;
+
 /** Only show the loader if rendering takes longer than this (ms) */
 const LOADER_DELAY = 150;
 /** Layers are thousands of elements. They are added a slice at a time, about this many characters each */
@@ -248,6 +251,24 @@ export const ScrollableCanvas = ({
                         style={{ fill: "var(--moon)" }}
                     />
                 </svg>
+{/* Open water: a pale wash below the far shore. It doesn't move sideways, being
+    the same everywhere; mountains hide it where they stand */}
+<svg
+    id="Water"
+    width={windowWidth}
+    height={windowHeight}
+    viewBox={`0 0 100 ${WORLD_HEIGHT}`}
+    preserveAspectRatio="none"
+    aria-hidden="true"
+>
+    <rect
+        x="0"
+        y={WATER_FADE_TOP}
+        width="100"
+        height={WORLD_HEIGHT - WATER_FADE_TOP}
+        fill="url(#water)"
+    />
+</svg>
 <div id="World" ref={worldRef}>
                     {/* Scales the painting to the window; the engine moves #World */}
                     <div

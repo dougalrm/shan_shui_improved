@@ -36,6 +36,14 @@ export const withInkStrength = <T>(strength: number, build: () => T): T => {
     }
 };
 
+/**
+ * Open water lies below the far shore, where the distant mountains stand (their feet are at
+ * 230-280 down the 900-tall world). The wash fades in over this band so the uneven shoreline
+ * doesn't show a hard edge.
+ */
+export const WATER_FADE_TOP = 232;
+export const WATER_TOP = 280;
+
 /** How many strengths of ink there are */
 export const INK_STEPS = 50;
 /** Brightness (0-255) of the ink the original greys are measured against */
@@ -137,6 +145,11 @@ export const inkStylesheet = (): string => {
  * (and in downloaded files) once. Mist and cloud strength follow the palette's --mist.
  */
 export const inkDefs = (): string => `
+    <linearGradient id="water" x1="0" y1="${WATER_FADE_TOP}" x2="0" y2="900" gradientUnits="userSpaceOnUse">
+        <stop offset="0" style="stop-color:var(--water-far);stop-opacity:0"/>
+        <stop offset="${((WATER_TOP - WATER_FADE_TOP) / (900 - WATER_FADE_TOP)).toFixed(3)}" style="stop-color:var(--water-far);stop-opacity:1"/>
+        <stop offset="1" style="stop-color:var(--water-near);stop-opacity:1"/>
+    </linearGradient>
     <radialGradient id="mist" cx="0.5" cy="0.5" r="0.5">
         <stop offset="0" style="stop-color:var(--silk);stop-opacity:calc(0.95 * var(--mist, 1))"/>
         <stop offset="0.55" style="stop-color:var(--silk);stop-opacity:calc(0.8 * var(--mist, 1))"/>

@@ -278,6 +278,15 @@ What `PillarLayer` now does with them:
   - **The fix:** boats are now checked against the real shape of the mountains, in this chunk and the chunks either side. None now land on a mountain.
 - **Rain:** it was being drawn, but it was too fast and faint to see in motion. It now falls at about half the speed and nearly twice as dark, with longer, thicker drops.
 
+### 16. Open water wash
+*(see git log: "Open water")*
+
+- **The problem:** sky and water were both bare silk, so the water blended into the paper everywhere except winter.
+- **The wash:** a pale wash now covers the water, from the far shore down. The far shore is the line the distant mountains stand on, about 230–280 units down. The wash fades in over that band so the uneven shore has no hard edge, and it is a little deeper towards the far shore.
+- **Where it shows:** mountains hide it where they stand, so they read as islands. Mist and cloud bands (silk-coloured) now show as pale veils over the water.
+- **Palettes:** day, night and winter each have their own water colours (`--water-far`, `--water-near`). Winter water is darker than its snowy sky, as in classic snow scenes.
+- **Downloads:** exports include the wash.
+
 ---
 
 ## Known limits and ideas not yet built

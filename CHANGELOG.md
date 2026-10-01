@@ -388,7 +388,7 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 - **Drawing order:** it is drawn in front of the water, boats and the feet of the middle mountains, and behind the foreground hills.
 
 ### 26. Real pavilions, a wooded foreground
-*(see git log: "Real pavilions")*
+*`62fd3a0`*
 
 - **Pavilions:**
   - **The problem:** the pavilion roof was a cone of hatched lines, which read as a haystack or tent.

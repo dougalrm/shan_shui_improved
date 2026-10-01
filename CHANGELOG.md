@@ -465,7 +465,7 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 - **How:** each scene's profile gained `temple`, `pagoda`, `village`, `pavilion` and `travellers`. These scale the chances above and blend across borders like the rest.
 
 ### 30. Texture strokes that suit the rock
-*(see git log: "Hemp-fibre and axe-cut texture strokes, chosen by the rock")*
+*`13883fc`*
 
 - **The problem:** every mountain was modelled with the same strokes along its contours, whether it was a soft rounded hill or a sheer cliff.
 - **Two classic texture strokes (皴法):** a new `Cun.ts` provides two kinds:

@@ -12,7 +12,12 @@
         "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "docs": "typedoc"
+        "docs": "typedoc",
+        "check": "node scripts/check.mjs",
+        "check:browser": "node scripts/browser-check.mjs",
+        "stats": "node scripts/stats.mjs",
+        "shots": "node scripts/shots.mjs",
+        "perf": "node scripts/perf.mjs"
     },
     "eslintConfig": {
         "extends": [

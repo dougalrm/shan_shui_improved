@@ -9,6 +9,7 @@
       "esnext"
     ],
     "strict": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "target": "esnext",
   },

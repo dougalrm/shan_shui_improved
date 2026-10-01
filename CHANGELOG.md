@@ -29,6 +29,18 @@ Everything changed since this fork was taken from upstream [Megaemce/shan_shui](
 
 - Ignores lockfiles, env files, logs, caches and editor files.
 
+### Checks and tools in `scripts/`
+*(see git log: "Checks and tools for working on the painting")*
+
+- **What changed:** the test scripts used during this work are now part of the repo, as npm scripts (see `scripts/README.md`):
+  - `npm run check` runs type checks, then paints four pictures in Node. It checks that chunks come out the same in any painting order and contain no `NaN` or `undefined`, and lists which kinds of layer changed against `scripts/baseline.json` (`--update` accepts the changes).
+  - `npm run check:browser` checks that the painting is identical in the browser at two window sizes.
+  - `npm run stats` counts placements, `npm run shots` saves screenshots along the scroll, and `npm run perf` measures frame pacing in a real Chrome window.
+- **Supporting changes:**
+  - Chunk generation moved out of the worker into `src/workers/generate.ts`, so the app and the checks run the same code. The output is byte-identical.
+  - `tsconfig.json` gained `skipLibCheck`, as TypeScript's DOM types clash with Node's.
+- **Effect:** big changes, like the scene planning that comes next, can be checked for seams, broken numbers, unintended changes and scroll smoothness in a minute.
+
 ---
 
 ## Performance and scrolling

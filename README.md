@@ -56,6 +56,12 @@ bun install
 bun start
 ```
 
+With npm instead: `npm install --legacy-peer-deps`, then `npm start`.
+
+## 🧪 Checks
+
+`npm run check` checks that the painting is still seamless and shows what a change altered. `npm run shots` and `npm run perf` take screenshots and measure smoothness. See [scripts/README.md](scripts/README.md).
+
 ## 📖 Documentation
 
 [Check it in online](https://megaemce.github.io/shan_shui_docs/) or generate it locally with TypeDoc from Shan_Shui project.

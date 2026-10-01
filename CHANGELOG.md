@@ -301,7 +301,7 @@ What `PillarLayer` now does with them:
   - has edges that grow fainter and more broken until it disappears into the mist.
 
 ### 18. Lighter mist, season colour, calmer paper
-*(see git log: "Lighter mist")*
+*`e696224`*
 
 - **Mist:** the mist at mountain feet is about 25% more transparent, so the bases no longer wash out. Cloud bands keep their own strength.
 - **Season colour:**

@@ -323,7 +323,7 @@ Counting them in the generator showed only 4 waterfalls in 12 chunks, all small 
 - **Result:** 7 waterfalls in the same stretch, falling 95–225 units, and clearly visible.
 
 ### 20. Pavilions in proportion, on their hills
-*(see git log: "Pavilions in proportion")*
+*`29637c3`*
 
 The thatched pavilions (茅亭) on foreground hills read as shacks.
 

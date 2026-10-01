@@ -3,7 +3,13 @@ import Range from "./Range";
 import { GeneratedFrame, GeneratorRequest } from "../workers/messages";
 import { LayerType } from "../types/LayerType";
 import { config } from "../config";
-import { inkDefs, inkStylesheet, WATER_FADE_TOP } from "../utils/ink";
+import {
+    HORIZON_BOTTOM,
+    HORIZON_TOP,
+    inkDefs,
+    inkStylesheet,
+    WATER_FADE_TOP,
+} from "../utils/ink";
 import { getPaintingOptions } from "../utils/style";
 
 const TAG_ORDER = config.renderer.tagOrder;
@@ -225,20 +231,21 @@ export default class Renderer {
         const box = `x="${range.start}" y="0" width="${range.length}" height="${windowHeight}"`;
         const content: string = `<svg xmlns="http://www.w3.org/2000/svg" width="${range.length}" height="${windowHeight}" viewBox="${viewbox}">
     <style>
-        svg { --ink: ${color("--ink")}; --silk: ${color("--silk")}; --seal: ${color("--seal")}; --mist: ${color("--mist") || 1}; --water-far: ${color("--water-far")}; --water-near: ${color("--water-near")}; }
+        svg { --ink: ${color("--ink")}; --silk: ${color("--silk")}; --seal: ${color("--seal")}; --mist: ${color("--mist") || 1}; --water-far: ${color("--water-far")}; --water-near: ${color("--water-near")}; --horizon: ${color("--horizon")}; }
         ${inkStylesheet()}
     </style>
     <defs>
         ${inkDefs()}
         <filter id="roughpaper" ${box} filterUnits="userSpaceOnUse">
-            <feTurbulence type="fractalNoise" stitchTiles="stitch" baseFrequency="0.02" numOctaves="5" result="noise"/>
-            <feDiffuseLighting in="noise" lighting-color="${color("--paper-light")}" surfaceScale="2" result="diffLight">
+            <feTurbulence type="fractalNoise" stitchTiles="stitch" baseFrequency="0.035" numOctaves="4" result="noise"/>
+            <feDiffuseLighting in="noise" lighting-color="${color("--paper-light")}" surfaceScale="1.2" result="diffLight">
                 <feDistantLight azimuth="45" elevation="60"/>
             </feDiffuseLighting>
         </filter>
     </defs>
     <rect id="Silk" ${box} fill="${color("--ground")}"/>
     <rect id="Water" x="${range.start}" y="${WATER_FADE_TOP}" width="${range.length}" height="${windowHeight - WATER_FADE_TOP}" fill="url(#water)"/>
+    <rect id="Horizon" x="${range.start}" y="${HORIZON_TOP}" width="${range.length}" height="${HORIZON_BOTTOM - HORIZON_TOP}" fill="url(#horizon)"/>
     <g id="main">
 ${svg}
     </g>

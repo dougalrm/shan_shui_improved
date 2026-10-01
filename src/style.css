@@ -16,9 +16,11 @@
     --ground: #ffffff;
     /* Falling snow */
     --flake: #ffffff;
-    /* Open water: a pale wash, a little deeper towards the far shore */
-    --water-far: #dfe0dc;
-    --water-near: #eceae4;
+    /* Open water: a pale wash, a little deeper towards the far shore. Tinted by the season */
+    --water-far: #dcdfdb;
+    --water-near: #eaebe6;
+    /* A haze of the season's colour along the horizon: jade in summer */
+    --horizon: rgba(184, 210, 198, 0.22);
     /* Colour of the light on the paper texture, which is multiplied over everything */
     --paper-light: #f0e7d0;
     /* Cinnabar seal paste */
@@ -43,6 +45,23 @@ body.darkmode.season-winter {
     --silk: #3b4049;
 }
 
+/* A sprinkle of each season's colour, in the horizon haze and the water */
+body.season-spring {
+    --horizon: rgba(240, 190, 190, 0.22);
+    --water-far: #dde1da;
+    --water-near: #eaebe5;
+}
+
+body.season-autumn {
+    --horizon: rgba(232, 192, 136, 0.24);
+    --water-far: #dfddd6;
+    --water-near: #ebe9e3;
+}
+
+body.season-winter {
+    --horizon: rgba(190, 202, 220, 0.3);
+}
+
 /* Rain: a greyer, damper light */
 body.weather-rain {
     --paper-light: #e2ddd0;
@@ -57,6 +76,8 @@ body.darkmode {
     --flake: #e6e2d8;
     --water-far: #2c3038;
     --water-near: #272a31;
+    /* Moonlit haze, whatever the season */
+    --horizon: rgba(118, 132, 156, 0.22);
     --paper-light: #e4dfd3;
     --seal: #9c3a31;
     --moon: #eee8d8;
@@ -169,9 +190,18 @@ input.InputSeed {
         overflow: visible;
     }
 
-    & svg#Paper {
+    & #PaperTint {
+        position: absolute;
+        inset: 0;
         pointer-events: none;
+        background: var(--paper-light);
         mix-blend-mode: multiply;
+    }
+
+    & #Grain {
+        position: absolute;
+        top: 0;
+        pointer-events: none;
     }
 
     /* Only at night */

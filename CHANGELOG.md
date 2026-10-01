@@ -300,6 +300,18 @@ What `PillarLayer` now does with them:
   - is set into the rock by short dark strokes down both banks;
   - has edges that grow fainter and more broken until it disappears into the mist.
 
+### 18. Lighter mist, season colour, calmer paper
+*(see git log: "Lighter mist")*
+
+- **Mist:** the mist at mountain feet is about 25% more transparent, so the bases no longer wash out. Cloud bands keep their own strength.
+- **Season colour:**
+  - A faint haze of the season's colour lies along the horizon, and the water takes a slight tint: jade in summer, peach-pink in spring, amber in autumn, cool grey-blue in winter, and a moonlit grey at night.
+  - Both are kept subtle (`--horizon`, `--water-far`, `--water-near`).
+- **Paper:** the paper texture used to be a filter fixed to the window while the painting slid beneath it. It is now two layers:
+  - a flat paper tint that stays put, which is uniform so nothing appears to move;
+  - the grain, which is gentler and finer, drawn as a seamless tile that scrolls with the picture. It sits on a strip three windows wide that re-anchors to whole tiles, so it never jumps.
+- **Downloads:** exports use the gentler texture too.
+
 ---
 
 ## Known limits and ideas not yet built

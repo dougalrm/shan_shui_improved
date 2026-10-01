@@ -4,12 +4,30 @@ import { IScrollableCanvas } from "../interfaces/IScrollableCanvas";
 import { RenderedLayer } from "../classes/Renderer";
 import { runWhenIdle } from "../utils/idle";
 import { usePanGestures } from "./usePanGestures";
-import { inkDefs, WATER_FADE_TOP } from "../utils/ink";
+import {
+    HORIZON_BOTTOM,
+    HORIZON_TOP,
+    inkDefs,
+    WATER_FADE_TOP,
+} from "../utils/ink";
 import { config } from "../config";
 import { Weather } from "./Weather";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const WORLD_HEIGHT = config.world.height;
+
+/** Size (px) of the paper grain tile */
+const GRAIN_TILE = 256;
+
+/**
+ * The paper's grain: lit fractal noise made seamless (stitchTiles), turned into translucent
+ * dark speckle so it darkens whatever is under it the way the paper would, without needing to
+ * blend. Gentler and finer than it used to be.
+ */
+const GRAIN = (() => {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${GRAIN_TILE}' height='${GRAIN_TILE}'><filter id='g' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/><feDiffuseLighting lighting-color='white' surfaceScale='1.2'><feDistantLight azimuth='45' elevation='60'/></feDiffuseLighting><feColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.42 0 0 0 0.42'/></filter><rect width='100%' height='100%' filter='url(#g)'/></svg>`;
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+})();
 
 /** Only show the loader if rendering takes longer than this (ms) */
 const LOADER_DELAY = 150;
@@ -59,6 +77,10 @@ export const ScrollableCanvas = ({
     const epochRef = useRef(0);
 
     usePanGestures(canvasRef, engine);
+
+    // Where the grain strip starts: a window behind the view, snapped to whole tiles
+    const grainLeft =
+        Math.floor((newPosition * scale - windowWidth) / GRAIN_TILE) * GRAIN_TILE;
 
     // The engine moves the picture with an animation the browser runs off the main thread
     useLayoutEffect(() => {
@@ -269,12 +291,43 @@ export const ScrollableCanvas = ({
         fill="url(#water)"
     />
 </svg>
-<div id="World" ref={worldRef}>
+                {/* A haze of the season's colour along the horizon */}
+                <svg
+                    id="Horizon"
+                    width={windowWidth}
+                    height={windowHeight}
+                    viewBox={`0 0 100 ${WORLD_HEIGHT}`}
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                >
+                    <rect
+                        x="0"
+                        y={HORIZON_TOP}
+                        width="100"
+                        height={HORIZON_BOTTOM - HORIZON_TOP}
+                        fill="url(#horizon)"
+                    />
+                </svg>
+                <div id="World" ref={worldRef}>
                     {/* Scales the painting to the window; the engine moves #World */}
                     <div
                         id="Scaled"
                         ref={pictureRef}
                         style={{ transform: `scale(${scale})` }}
+                    />
+                    {/* The grain of the paper moves with the picture. It is a seamless tile on
+                        a strip three windows wide, re-anchored to whole tiles as the picture
+                        scrolls, so it never visibly jumps */}
+                    <div
+                        id="Grain"
+                        aria-hidden="true"
+                        style={{
+                            left: grainLeft,
+                            width: windowWidth * 3 + GRAIN_TILE * 2,
+                            height: windowHeight,
+                            backgroundImage: GRAIN,
+                            backgroundSize: `${GRAIN_TILE}px ${GRAIN_TILE}px`,
+                        }}
                     />
                 </div>
                 {/* Gradients and such the picture refers to, e.g. the mist */}
@@ -286,43 +339,9 @@ export const ScrollableCanvas = ({
                     dangerouslySetInnerHTML={{ __html: `<defs>${inkDefs()}</defs>` }}
                 />
                 <Weather />
-                {/* The paper texture never moves, so it is painted once on its own layer */}
-                <svg
-                    id="Paper"
-                    width={windowWidth}
-                    height={windowHeight}
-                    viewBox={`0 0 ${windowWidth} ${windowHeight}`}
-                >
-                    <defs>
-                        <filter
-                            id="roughpaper"
-                            width={windowWidth}
-                            height={windowHeight}
-                        >
-                            <feTurbulence
-                                type="fractalNoise"
-                                stitchTiles="stitch"
-                                baseFrequency="0.02"
-                                numOctaves="5"
-                                result="noise"
-                            />
-                            <feDiffuseLighting
-                                in="noise"
-                                style={{ lightingColor: "var(--paper-light)" }}
-                                surfaceScale="2"
-                                result="diffLight"
-                            >
-                                <feDistantLight azimuth="45" elevation="60" />
-                            </feDiffuseLighting>
-                        </filter>
-                    </defs>
-                    <rect
-                        id="Background"
-                        filter="url(#roughpaper)"
-                        width={windowWidth}
-                        height={windowHeight}
-                    />
-                </svg>
+                {/* The colour of the paper, multiplied over everything. It is the same
+                    everywhere, so it can stay put while the picture scrolls */}
+                <div id="PaperTint" aria-hidden="true" />
             </div>
             <div id="Loader" className="hidden">
                 <svg

@@ -225,16 +225,29 @@ export const ScrollableCanvas = ({
             loaderText.innerText = "Creating elements...";
         }, LOADER_DELAY);
 
-        renderer
-            .renderLayers(range)
-            .then((layers) => {
-                if (!cancelled) requestSync(layers);
-            })
+        const hideLoader = () => {
+            clearTimeout(loaderTimer);
+            loader.classList.add("hidden");
+        };
+        const show = (layers: RenderedLayer[]) => {
+            if (!cancelled) requestSync(layers);
+            hideLoader();
+        };
+
+        // With nothing on the page yet (the start, or a redraw) the view comes first: its few
+        // chunks are drawn and shown while the ones ahead are still being made
+        const firstView =
+            nodesRef.current.size === 0
+                ? renderer
+                      .renderLayers(new Range(newPosition, newPosition + viewWidth))
+                      .then(show)
+                : Promise.resolve();
+
+        firstView
+            .then(() => renderer.renderLayers(range))
+            .then(show)
             .catch(console.error)
-            .finally(() => {
-                clearTimeout(loaderTimer);
-                loader.classList.add("hidden");
-            });
+            .finally(hideLoader);
 
         return () => {
             cancelled = true;

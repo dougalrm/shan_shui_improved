@@ -106,6 +106,13 @@ Six rounds of work took scrolling from jumping in 100px steps to a steady 60fps.
 - **What changed:** chunks more than 4 behind the visible ones are forgotten. A chunk is painted the same every time, so scrolling back regenerates it identically (checked: 80 layers in common, none different).
 - **Effect:** the heap stays at 25–45 MB however far it scrolls, so the painting can run for hours as a screensaver. Nothing drawn has changed.
 
+### The first view appears sooner
+*(see git log: "Show the first view before the chunks ahead")*
+
+- **Cause found:** at the start, and after changing the mountains, season or weather, nothing was shown until all six chunks in the lookahead range were drawn (about 80ms each), though the screen needs only the first two or three.
+- **What changed:** when the page is empty, the view's own chunks are shown first, then the ones ahead are filled in. The loader hides as soon as the first view is on screen.
+- **Effect:** the first layer appears after about 500ms instead of 760–840ms (a Chrome page load in `npm run soak`). The layers are identical (`npm run check:browser`), and scrolling stays at 60fps.
+
 ---
 
 ## Controls

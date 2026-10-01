@@ -387,6 +387,17 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 - **Its detail:** the water's edge is drawn as broken brush strokes of varying weight, with short strokes sloping down to show the bank shelving into the water. There are a few faint ground lines, reed tufts and pebbles at the edge.
 - **Drawing order:** it is drawn in front of the water, boats and the feet of the middle mountains, and behind the foreground hills.
 
+### 26. Real pavilions, a wooded foreground
+*(see git log: "Real pavilions")*
+
+- **Pavilions:**
+  - **The problem:** the pavilion roof was a cone of hatched lines, which read as a haystack or tent.
+  - **The redraw:** it now has a proper thatched pavilion (茅亭) form: a square floor with a low railing, four slender posts (the far two fainter), and a pyramidal roof with concave slopes, eaves turned up at the corners, light thatch lines and a small finial. The seated figures sit between the posts.
+- **Foreground trees:**
+  - **The problem:** the near bank felt empty.
+  - **The groves:** clumps of small trees and shrubs now grow along it, mixing pines, conifers and low bushes.
+  - **Their layout:** clumps are tightly gathered, with irregular open stretches between them, and none in an inlet. Within a clump, nearer trees sit lower on the bank and are larger and darker; ones towards the water are smaller and paler. Now and then a taller tree stands out.
+
 ---
 
 ## Known limits and ideas not yet built

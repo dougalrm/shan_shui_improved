@@ -5,6 +5,9 @@ import PRNG from "../PRNG";
 import Perlin from "../Perlin";
 import Point from "../Point";
 import Stroke from "../elements/Stroke";
+import Tree01 from "../structures/Tree01";
+import Tree02 from "../structures/Tree02";
+import Tree03 from "../structures/Tree03";
 import { config } from "../../config";
 
 const SHORE = config.layers.bank.shore;
@@ -66,6 +69,7 @@ export default class BankLayer extends Layer {
         this.addBankFace(shore);
         this.addGround(shore);
         this.addReeds(shore);
+        this.addGroves(xOffset, width);
         this.add(new MossDots(shore, 0, 0, xOffset * 0.01, 0.25, 0.8));
     }
 
@@ -124,6 +128,50 @@ export default class BankLayer extends Layer {
                 .map((point) => new Point(point.x, point.y + depth + PRNG.random(-1, 1)));
 
             if (line.length > 2) this.add(new Stroke(line, FAINT, FAINT, 1, 0.6));
+        }
+    }
+
+    /**
+     * Groves of small trees and shrubs scattered along the bank: a few pines, a gnarled tree,
+     * low bushes, at different sizes, coming and going with the land (none in an inlet)
+     */
+    private addGroves(xOffset: number, width: number): void {
+        let x = xOffset + PRNG.random(20, 120);
+
+        while (x < xOffset + width) {
+            const shoreY = BankLayer.shoreline(x);
+            const wooded = Perlin.noise(x * 0.004, 9.9) > 0.34;
+
+            if (wooded && shoreY < SHORE + SWING + 20) {
+                // A clump: tightly gathered, mixed, nearer ones lower, larger and darker
+                const trees = Math.floor(PRNG.random(2, 7.99));
+                for (let t = 0; t < trees; t++) {
+                    const near = PRNG.random(0, 1);
+                    const tx = x + PRNG.random(-28, 28);
+                    const ty = BankLayer.shoreline(tx) + 6 + near * 55;
+                    const size = 0.6 + near * 0.8;
+                    const ink = `rgba(100,100,100,${(0.35 + near * 0.35).toFixed(2)})`;
+                    const kind = PRNG.random();
+
+                    if (kind < 0.35) {
+                        this.add(
+                            new Tree01(tx, ty, PRNG.random(30, 70) * size, 1.2 + near * 1.2, ink)
+                        );
+                    } else if (kind < 0.6) {
+                        const bend = PRNG.random(-0.1, 0.1);
+                        // Now and then a taller one stands out of the grove
+                        const tall = PRNG.random() < 0.2 ? 1.5 : 1;
+                        this.add(
+                            new Tree03(tx, ty, PRNG.random(35, 80) * size * tall, ink, (v) => v * bend)
+                        );
+                    } else {
+                        // Low shrubs, ground cover between the trees
+                        this.add(new Tree02(tx, ty, ink, near > 0.5 ? 3 : 2));
+                    }
+                }
+            }
+            // Irregular spacing: clumps with open stretches between
+            x += PRNG.random(90, 320);
         }
     }
 

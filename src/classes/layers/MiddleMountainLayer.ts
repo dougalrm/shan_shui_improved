@@ -358,7 +358,7 @@ export default class MiddleMountainLayer extends Layer {
         // It starts in a saddle of the ridge (a dip between peaks), where water would gather,
         // high enough above the foot for a long fall.
         const isHostPeak = height >= HOST_PEAK_HEIGHT_MIN;
-        if (height > 250 && PRNG.random() < (isHostPeak ? 0.9 : 0.3)) {
+        if (height > 250 && PRNG.random() < (isHostPeak ? 0.9 : 0.45)) {
             const ridge = elementArray[0];
             const foot = yOffset - height * 0.05;
             let saddle: Point | undefined;
@@ -366,24 +366,29 @@ export default class MiddleMountainLayer extends Layer {
             for (let j = Math.floor(elementDetails * 0.2); j < elementDetails * 0.8; j++) {
                 const point = ridge[j];
                 const isDip = point.y > ridge[j - 1].y && point.y >= ridge[j + 1].y;
-                const highEnough = foot - (point.y + yOffset) > height * 0.45;
+                const highEnough = foot - (point.y + yOffset) > height * 0.4;
                 if (isDip && highEnough && (!saddle || point.y > saddle.y)) saddle = point;
             }
-            // No saddle: start a little below the highest point of the middle stretch
-            if (!saddle) {
-                saddle = ridge
+            // Water doesn't pour off a summit. Without a saddle it emerges from a cleft well
+            // down the face, below the high point
+            let source = saddle;
+            let drop = height * 0.08;
+            if (!source) {
+                source = ridge
                     .slice(Math.floor(elementDetails * 0.3), Math.floor(elementDetails * 0.7))
                     .reduce((top, point) => (point.y < top.y ? point : top));
+                drop = height * 0.28;
             }
 
-            const top = saddle.y + yOffset + height * 0.08;
+            const top = source.y + yOffset + drop;
             if (foot - top > height * 0.3) {
                 this.add(
                     new Waterfall(
-                        saddle.x + xOffset,
+                        source.x + xOffset,
                         top,
                         foot,
-                        PRNG.random(12, 18) * (isHostPeak ? 1.4 : 1)
+                        PRNG.random(12, 18) * (isHostPeak ? 1.4 : 1),
+                        source.y + yOffset
                     )
                 );
             }

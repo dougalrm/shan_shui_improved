@@ -18,8 +18,15 @@ export default class Waterfall extends Structure {
      * @param {number} top - Where it starts
      * @param {number} bottom - Where it ends (in the mist at the foot)
      * @param {number} width - Width at the top; it widens a little as it falls
+     * @param {number} ridge - Height of the ridge above it: the gully must stay below it
      */
-    constructor(x: number, top: number, bottom: number, width: number) {
+    constructor(
+        x: number,
+        top: number,
+        bottom: number,
+        width: number,
+        ridge: number
+    ) {
         super();
 
         // The dark rock on either side goes down first; the water is bare silk over it
@@ -27,7 +34,7 @@ export default class Waterfall extends Structure {
         this.addRockWash(left, -1);
         this.addRockWash(right, 1);
         this.addWater(left, right);
-        this.addGully(x, top, width, bottom - top);
+        this.addGully(x, top, width, Math.min((bottom - top) * 0.35, top - ridge - 3));
         this.addBanks(left, right);
         this.addBoulders(left[0], right[0]);
     }
@@ -59,27 +66,38 @@ export default class Waterfall extends Structure {
     }
 
     /**
-     * A band of darker wash on the rock beside the water, so the white fall stands out against
-     * it, as ink painters frame waterfalls. Strongest at the top, fading as the fall goes down.
+     * Darker wash on the rock beside the water, so the white fall stands out against it, as ink
+     * painters frame waterfalls. Broken, irregular patches of varying width and strength, like
+     * brushwork rather than a band; strongest near the top and fading as the fall goes down.
      */
     private addRockWash(edge: Point[], side: number): void {
-        const pieces = 3;
         const steps = edge.length - 1;
+        const seed = PRNG.random(0, 100);
+        let i = 0;
 
-        for (let p = 0; p < pieces; p++) {
-            const from = Math.floor((steps * p) / pieces);
-            const to = Math.floor((steps * (p + 1)) / pieces);
-            const inner = edge.slice(from, to + 1);
-            const outer = inner.map(
-                (point, i) =>
-                    new Point(
-                        point.x + side * (10 + 6 * Math.sin((Math.PI * (from + i)) / steps)),
-                        point.y
-                    )
-            );
-            const ink = `rgba(70,70,70,${(0.22 - p * 0.06).toFixed(2)})`;
+        while (i < steps) {
+            const start = i;
+            const end = Math.min(steps, start + Math.floor(PRNG.random(3, 8)));
 
-            this.add(new Element(inner.concat([...outer].reverse()), 0, 0, ink, "none"));
+            if (PRNG.random() < 0.7) {
+                const t = start / steps;
+                const strength = 0.2 * (1 - t * 0.7) * PRNG.random(0.6, 1);
+                const inner = edge.slice(start, end + 1);
+                const outer = inner.map(
+                    (point, k) =>
+                        new Point(
+                            point.x +
+                                side * (3 + 10 * Perlin.noise((start + k) * 0.3, seed)),
+                            point.y
+                        )
+                );
+                const ink = `rgba(70,70,70,${strength.toFixed(2)})`;
+
+                this.add(
+                    new Element(inner.concat([...outer].reverse()), 0, 0, ink, "none")
+                );
+            }
+            i = end + Math.floor(PRNG.random(1, 4));
         }
     }
 
@@ -125,9 +143,12 @@ export default class Waterfall extends Structure {
         }
     }
 
-    /** The gully the water comes from: two faint strokes converging up the slope */
-    private addGully(x: number, top: number, width: number, fall: number): void {
-        const reach = Math.min(fall * 0.35, 70);
+    /**
+     * The gully the water comes from: two faint strokes converging up the slope, stopping
+     * short of the ridge
+     */
+    private addGully(x: number, top: number, width: number, reach: number): void {
+        if (reach < 8) return;
         const ink = "rgba(100,100,100,0.32)";
 
         for (const side of [-1, 1]) {

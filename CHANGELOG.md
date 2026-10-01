@@ -337,6 +337,15 @@ The thatched pavilions (茅亭) on foreground hills read as shacks.
   - **Frequency:** the chance per hill is now 15%.
   - **Other figures:** travellers and figures crossing bridges are drawn at the same smaller scale.
 
+### 21. Waterfalls stay on their mountain
+*(see git log: "Waterfalls stay on their mountain")*
+
+- **What was wrong:** on mountains without a saddle, a waterfall started at the summit and its gully lines climbed above the peak into the sky. The darker rock beside the water was a uniform band, so falls read as vertical stripes.
+- **Where they start:** water no longer comes off a summit. Without a saddle, a fall emerges from a cleft well down the face, below the high point.
+- **The gully:** it is clipped so it always stops just below the ridge.
+- **The rock beside the water:** broken, irregular patches of wash with varying width and strength, fading down the fall, like brushwork.
+- **How often:** on 45% of tall mountains (was 30%) to make up for the stricter placement.
+
 ---
 
 ## Known limits and ideas not yet built

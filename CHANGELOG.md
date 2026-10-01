@@ -464,6 +464,19 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 - **Pavilions** are most likely on the foreground hills by level water. Travellers on the hills follow the scenes too.
 - **How:** each scene's profile gained `temple`, `pagoda`, `village`, `pavilion` and `travellers`. These scale the chances above and blend across borders like the rest.
 
+### 30. Texture strokes that suit the rock
+*(see git log: "Hemp-fibre and axe-cut texture strokes, chosen by the rock")*
+
+- **The problem:** every mountain was modelled with the same strokes along its contours, whether it was a soft rounded hill or a sheer cliff.
+- **Two classic texture strokes (皴法):** a new `Cun.ts` provides two kinds:
+  - **Hemp-fibre (披麻皴):** long, soft, slightly wavering lines in parallel bundles. They run from just under a ridge a long way down the slope's fall line (`HempFibre`).
+  - **Axe-cut (斧劈皴):** short, broad, angular wedges dragged slanting across the fall line, as with the side of the brush. They are stacked in clusters down the faces, mostly on the shadow side (`AxeCut`, and `CliffAxeCut` for cliff faces).
+- **Chosen by the rock:**
+  - **Middle mountains** measure how steep their drawn ridge really is (most rise well short of their nominal height). Rounded ones get hemp-fibre, steep ones get axe-cut, and those in between get a mix. Hemp-fibre mountains also have fewer of the old contour strokes.
+  - **Pillars** now carry axe-cut wedges down their shadow faces, as sandstone cliffs are painted, among fewer of the short vertical strokes.
+  - **Foreground rocks** taller than 80 get a few axe-cut clusters.
+- **Effect:** the mountains read as different kinds of rock, and the texture follows the slope rather than wrapping round it. Chunk weight is about the same (the heaviest is about 4 MB).
+
 ---
 
 ## Known limits and ideas not yet built

@@ -3,6 +3,7 @@ import MossDots from "./MossDots";
 import PRNG from "../PRNG";
 import Perlin from "../Perlin";
 import Point from "../Point";
+import { CliffAxeCut } from "./Cun";
 import Stroke from "../elements/Stroke";
 import Structure from "../Structure";
 import Tree01 from "./Tree01";
@@ -141,9 +142,16 @@ export default class Pillar extends Structure {
         }
     }
 
-    /** Short vertical strokes down the shadow side (the texture strokes of the rock) */
+    /**
+     * The texture strokes of the rock down the shadow side: broad axe-cut wedges (斧劈皴), as
+     * sandstone cliffs are painted, among a few short vertical strokes
+     */
     private addShading(left: Point[], right: Point[], height: number): void {
-        const count = Math.floor(PRNG.random(8, 18.99) * Math.min(1.5, height / 200));
+        const count = Math.floor(PRNG.random(4, 9.99) * Math.min(1.5, height / 200));
+
+        if (height > 50) {
+            this.add(new CliffAxeCut(left, right, Math.ceil(count * 0.6)));
+        }
 
         for (let s = 0; s < count; s++) {
             const across = PRNG.random(0.62, 0.92);

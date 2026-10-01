@@ -1,5 +1,6 @@
 import BottomMountainDecoration from "../structures/BottomMountainDecoration";
 import Element from "../Element";
+import { AxeCut } from "../structures/Cun";
 import Layer from "../Layer";
 import Man from "../structures/Man";
 import MossDots from "../structures/MossDots";
@@ -150,6 +151,11 @@ export default class BottomMountainLayer extends Layer {
                 }
             )
         );
+
+        // A few axe-cut strokes (斧劈皴) on the faces of the taller rocks
+        if (height > 80) {
+            this.add(new AxeCut(pointArray, xOffset, yOffset, Math.round(width / 160), 0.9));
+        }
 
         const _grlist1: Point[] = [];
         const _grlist2: Point[] = [];

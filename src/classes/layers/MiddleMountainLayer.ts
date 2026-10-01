@@ -1,4 +1,5 @@
 import Element from "../Element";
+import { AxeCut, HempFibre } from "../structures/Cun";
 import House from "../structures/House";
 import MossDots from "../structures/MossDots";
 import Layer from "../Layer";
@@ -159,16 +160,37 @@ export default class MiddleMountainLayer extends Layer {
 
         this.add(new MiddleMountainFoot(elementArray, xOffset, yOffset));
 
+        // How rounded the mountain is (1) rather than steep (0), which decides its texture. From
+        // the ridge as drawn, which rises well short of `height` on most mountains
+        const drawnHeight = -Math.min(...elementArray[0].map((p) => p.y));
+        const steepness = drawnHeight / width;
+        const hemp = Math.min(1, Math.max(0, (0.55 - steepness) / 0.25));
+
         this.add(
             new Texture(
                 elementArray,
                 xOffset,
                 yOffset,
-                TEXTURE_SIZE,
+                Math.round(TEXTURE_SIZE * (0.4 + 0.3 * (1 - hemp))),
                 1,
                 PRNG.randomChoice([1, 2, 3])
             )
         );
+
+        // TEXTURE STROKES (皴): long hemp-fibre strokes down the slopes of rounded mountains,
+        // broad axe-cut wedges on the steep ones, a mix in between
+        if (height > 120) {
+            this.add(new HempFibre(elementArray, xOffset, yOffset, Math.round((hemp * width) / 55)));
+            this.add(
+                new AxeCut(
+                    elementArray,
+                    xOffset,
+                    yOffset,
+                    Math.round(((1 - hemp) * width * drawnHeight) / 9000),
+                    Math.min(1.2, drawnHeight / 250)
+                )
+            );
+        }
 
         // MOSS DOTS along the ridge, below the peak where the rim trees are
         this.add(

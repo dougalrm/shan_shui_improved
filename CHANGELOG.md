@@ -478,7 +478,7 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 - **Effect:** the mountains read as different kinds of rock, and the texture follows the slope rather than wrapping round it. Chunk weight is about the same (the heaviest is about 4 MB).
 
 ### 31. An old pine or a boulder frames the view
-*(see git log: "Old pines and boulders in the very front frame the view")*
+*`191dd2a`*
 
 - **What changed:** a new "framing" layer (`FramingLayer`, drawn in front of the foreground hills) places one of three things in the very front, cut off by the bottom edge:
   - an old pine (古松);

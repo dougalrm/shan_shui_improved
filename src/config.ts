@@ -94,6 +94,12 @@ export const config = {
                 colorNoAlfa: "rgba(100, 100, 100,",
             },
         },
+        bank: {
+            /** Where the near shore runs, on average (the world is 900 tall) */
+            shore: 800,
+            /** How far it rolls up and down */
+            swing: 50,
+        },
         pillar: {
             /** Columns are this much taller than the classic mountain they replace */
             heightScale: 1.15,
@@ -146,6 +152,9 @@ export const config = {
             // Boats only go on open water, so they can be drawn after the mist and cloud
             // bands (which would veil them) without ever overlapping a mountain
             boat: 4.6,
+            // The near bank: in front of the water and the middle mountains' feet, behind the
+            // foreground hills that stand on it
+            bank: 4.8,
             water: 3,
             middleMountain: 4,
             clouds: 4.5,

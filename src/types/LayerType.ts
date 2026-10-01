@@ -11,4 +11,5 @@ export type LayerType =
     | "inscription"
     | "birds"
     | "bridge"
-    | "clouds";
+    | "clouds"
+    | "bank";

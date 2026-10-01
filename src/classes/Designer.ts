@@ -515,6 +515,10 @@ export default class Designer {
             }
         }
 
+        // The near bank along the front of the whole stretch (it draws its own shoreline,
+        // seamless across chunks)
+        this.plan.push(new SketchLayer("bank", range.start, 0, range.length));
+
         // Bands of cloud lying across the massifs at mid-height. Last, so adding them
         // doesn't change anything placed before.
         let bands = 0;

@@ -375,6 +375,18 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 | Sailing junk (帆船) | 15% | A mast with a battened sail, a figure at the helm, and a faint wake |
 | Punt | 20% | A boatman standing at the stern pushing a long pole into the water. 60% carry a seated passenger in a broad hat, with a faint wake |
 
+### 25. A near bank joins the foreground hills
+*(see git log: "A near bank joins")*
+
+- **The problem:** the foreground hills stood in open water right to the bottom of the picture, so they read as isolated islands, out of place.
+- **The bank:** a new "bank" layer (`BankLayer`) runs along the front of the whole picture. It is low ground, as in Shan Shui foregrounds, that the near hills now stand on, so they read as one continuous shore. Hills further back stay as islands in the lake, which keeps the depth.
+- **Its shape:**
+  - The shoreline rolls gently, with a finer irregular edge on top (`config.layers.bank`).
+  - Now and then it falls away into an inlet where the water comes right to the front.
+  - It is a smooth function of position alone, so it is seamless across chunks and the same for a given seed.
+- **Its detail:** the water's edge is drawn as broken brush strokes of varying weight, with short strokes sloping down to show the bank shelving into the water. There are a few faint ground lines, reed tufts and pebbles at the edge.
+- **Drawing order:** it is drawn in front of the water, boats and the feet of the middle mountains, and behind the foreground hills.
+
 ---
 
 ## Known limits and ideas not yet built

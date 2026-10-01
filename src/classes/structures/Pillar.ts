@@ -21,12 +21,21 @@ export default class Pillar extends Structure {
      * @param {number} base - Bottom of the column
      * @param {number} width - Width at the base
      * @param {number} height - Height up to the shoulder of the summit
+     * @param {boolean} [flatTop=false] - A flat summit, like the remains of the plateau on a mesa
+     * @param {number} [leaning=0.25] - How far (share of the width) it may lean
      */
-    constructor(x: number, base: number, width: number, height: number) {
+    constructor(
+        x: number,
+        base: number,
+        width: number,
+        height: number,
+        flatTop: boolean = false,
+        leaning: number = 0.25
+    ) {
         super();
 
         const steps = Math.max(12, Math.floor(height / 8));
-        const lean = PRNG.random(-0.25, 0.25) * width;
+        const lean = PRNG.random(-leaning, leaning) * width;
         const seed = PRNG.random(0, 100);
         const left: Point[] = [];
         const right: Point[] = [];
@@ -50,7 +59,9 @@ export default class Pillar extends Structure {
         // The summit: a low, bumpy dome between the two shoulders
         const shoulderLeft = left[steps];
         const shoulderRight = right[steps];
-        const capHeight = width * PRNG.random(0.12, 0.3);
+        const capHeight = flatTop
+            ? Math.min(8, width * 0.04)
+            : width * PRNG.random(0.12, 0.3);
         const cap: Point[] = [];
         for (let k = 1; k < 8; k++) {
             const t = k / 8;
@@ -85,7 +96,7 @@ export default class Pillar extends Structure {
 
     /** Pines clinging to ledges on the sides */
     private addLedgeTrees(left: Point[], right: Point[]): void {
-        const count = Math.floor(PRNG.random(0, 3.99));
+        const count = Math.floor(PRNG.random(1, 5.99));
 
         for (let t = 0; t < count; t++) {
             const side = PRNG.random() < 0.5 ? left : right;
@@ -176,7 +187,8 @@ export default class Pillar extends Structure {
     private addSummitLife(cap: Point[], width: number, seed: number): void {
         this.add(new MossDots(cap, 0, 0, seed, 0.45, 0.7));
 
-        const clumps = Math.max(1, Math.floor(width / 25));
+        // Real summits are thickly wooded with pines
+        const clumps = Math.max(2, Math.floor(width / 16));
         for (let c = 0; c < clumps; c++) {
             const spot = cap[Math.floor(PRNG.random(0, cap.length))];
             this.add(
@@ -184,7 +196,7 @@ export default class Pillar extends Structure {
                     spot.x,
                     spot.y + 2,
                     `rgba(100,100,100,${PRNG.random(0.5, 0.7).toFixed(2)})`,
-                    2
+                    3
                 )
             );
         }

@@ -4,6 +4,7 @@ import Range from "./Range";
 import SketchLayer from "./SketchLayer";
 import { LayerType } from "../types/LayerType";
 import { config } from "../config";
+import { getMountainStyle } from "../utils/style";
 
 const BACKGROUND_MOUNTAIN_INTERVAL =
     config.designer.backgroundMountain.interval;
@@ -48,6 +49,7 @@ const HOST_PEAK_SPACING = config.designer.hostPeak.spacing;
 const INSCRIPTION_THRESHOLD = config.designer.inscription.threshold;
 const INSCRIPTION_Y = config.designer.inscription.y;
 const CHUNK_WIDTH = config.world.chunkWidth;
+const BLEND_THRESHOLD = config.layers.pillar.blendThreshold;
 const BIRDS_CHANCE = config.designer.birds.chance;
 const BIRDS_Y_MIN = config.designer.birds.y.min;
 const BIRDS_Y_MAX = config.designer.birds.y.max;
@@ -93,6 +95,19 @@ export default class Designer {
         // stretches are the exception and the busiest parts reach the host peak threshold
         const value = (noise - 0.25) / 0.35;
         return Math.min(1, Math.max(0, value));
+    }
+
+    /**
+     * Whether mountains at x are drawn as Zhangjiajie-like pillars, depending on the style
+     * (?style=, see utils/style.ts). In the blend style a slow noise decides, so pillars come in
+     * stretches of country rather than one here and there.
+     * @param {number} x - Position in the world
+     * @returns {boolean} true for pillars, false for classic mountains
+     */
+    static isPillarCountry(x: number): boolean {
+        const style = getMountainStyle();
+        if (style !== "blend") return style === "pillars";
+        return Perlin.noise(Math.max(0, x) * 0.0006, 57.1) > BLEND_THRESHOLD;
     }
 
     /**
@@ -268,11 +283,20 @@ export default class Designer {
         // Generate MiddleMountains: many where the landscape is intense, few in quiet stretches
         for (let x = range.start; x < range.end; x += X_STEP) {
             const here = intensity(x);
+            // Pillar country is airier: each spot is a whole stretch of columns in ranks,
+            // so fewer spots, stacked at most two deep, with mist-filled gorges between
+            const pillars = Designer.isPillarCountry(x);
             const chance =
-                MIDDLE_MOUNTAIN_PROBABILITY * (0.15 + 2.2 * Math.pow(here, 1.5));
+                MIDDLE_MOUNTAIN_PROBABILITY *
+                (0.15 + 2.2 * Math.pow(here, 1.5)) *
+                (pillars ? 0.75 : 1);
+            let stacked = 0;
 
             if (PRNG.random() < chance) {
-                for (let y = 0; y < yRange(x) * 480; y += 30) {
+                // Pillar stretches step further between depths, so their ranks spread from
+                // the distance into the foreground rather than bunching at the back
+                for (let y = 0; y < yRange(x) * 480; y += pillars ? 130 : 30) {
+                    if (pillars && stacked >= 3) break;
                     const width = PRNG.random(
                         MIDDLE_MOUNTAIN_WIDTH_MIN,
                         MIDDLE_MOUNTAIN_WIDTH_MAX
@@ -311,6 +335,7 @@ export default class Designer {
                         )
                     ) {
                         this.plan.push(middleMountain);
+                        stacked++;
                         // keep track of the x positions of the visible middle mountains for water creation
                         middleMountainPositions.push({
                             x: xOffset,

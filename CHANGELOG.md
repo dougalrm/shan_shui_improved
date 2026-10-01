@@ -421,7 +421,7 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
   - **Boats** keep off them.
 
 ### 28. The scroll moves through scenes
-*(see git log: "The scroll moves through scenes, like a handscroll")*
+*`a4f93f6`*
 
 - **The problem:** a single noise curve set the pace. It drifted between busy and quiet but never built to anything, and its quiet stretches were mostly empty water.
 - **Scenes:** a new `Scenes` class (`src/classes/Scenes.ts`) plans the scroll as a sequence of scenes, after Guo Xi's three distances (三远):

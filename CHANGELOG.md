@@ -347,7 +347,7 @@ The thatched pavilions (茅亭) on foreground hills read as shacks.
 - **How often:** on 45% of tall mountains (was 30%) to make up for the stricter placement.
 
 ### 22. Waterfalls cascade down the slope
-*(see git log: "Waterfalls cascade down the slope")*
+*`d11aff5`*
 
 - **The problem:** straight drops only make sense off a cliff edge. On a slope they didn't sit right, and the gully above the source read as stray lines.
 - **The course:** the water now follows the ground. Starting at the saddle, or below the high point if there isn't one, its course is traced down through the mountain's nested ridges, drifting sideways at each and only ever going downhill. It is then smoothed so it meanders rather than zigzags.

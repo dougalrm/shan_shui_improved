@@ -287,6 +287,19 @@ What `PillarLayer` now does with them:
 - **Palettes:** day, night and winter each have their own water colours (`--water-far`, `--water-near`). Winter water is darker than its snowy sky, as in classic snow scenes.
 - **Downloads:** exports include the wash.
 
+### 17. Grounded bridges, waterfalls set into the rock
+*(see git log: "Ground the bridges")*
+
+- **Bridges:**
+  - **The bug:** a bridge could join hills in different depth rows, sitting at their average height, so it floated above one hill and below the other.
+  - **The fix:** bridges now only join hills in the same row. They sit at the shared foot, near the ends of the hills where they come down to the water, with a rock bedding each end into its bank.
+  - **Frequency:** there are fewer of them, about 2–4 per 40,000 units.
+- **Waterfalls:** these used to start at a dark bar in the middle of a slope, as two parallel lines. Now each one:
+  - emerges from a faint V-shaped gully climbing towards the ridge;
+  - pours between dark boulders and moss, narrow at the top and spreading as it falls;
+  - is set into the rock by short dark strokes down both banks;
+  - has edges that grow fainter and more broken until it disappears into the mist.
+
 ---
 
 ## Known limits and ideas not yet built

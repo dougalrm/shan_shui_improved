@@ -173,10 +173,10 @@ export const config = {
         bridge: {
             /** Gaps between foreground hills a bridge can span */
             gap: { min: 40, max: 260 },
-            /** How different the two hills' heights may be */
-            maxDrop: 55,
+            /** The two hills must stand in the same row (their feet this close in height) */
+            maxDrop: 5,
             /** Chance that a suitable gap gets a bridge */
-            chance: 0.85,
+            chance: 1,
         },
         birds: {
             /** Chance that a chunk has a flock of geese somewhere in its sky */

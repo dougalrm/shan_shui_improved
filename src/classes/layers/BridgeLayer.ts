@@ -3,6 +3,7 @@ import Layer from "../Layer";
 import Man from "../structures/Man";
 import PRNG from "../PRNG";
 import Point from "../Point";
+import Rock from "../structures/Rock";
 import Stroke from "../elements/Stroke";
 
 const EDGE = "rgba(90,90,90,0.6)";
@@ -25,6 +26,20 @@ export default class BridgeLayer extends Layer {
             this.addArch(xOffset, yOffset, width);
         } else {
             this.addPlanks(xOffset, yOffset, width);
+        }
+
+        // Rocks at both ends, bedding the bridge into each bank
+        for (const end of [xOffset, xOffset + width]) {
+            this.add(
+                new Rock(
+                    end + PRNG.random(-6, 6),
+                    yOffset + 6,
+                    PRNG.random(0, 100),
+                    PRNG.random(10, 16),
+                    2,
+                    PRNG.random(20, 30)
+                )
+            );
         }
 
         if (PRNG.random() < 0.3) {

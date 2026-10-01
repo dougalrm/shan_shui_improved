@@ -425,8 +425,9 @@ export default class Designer {
             .sort((a, b) => a.x - b.x);
         for (let i = 0; i < hills.length - 1; i++) {
             const [near, far] = [hills[i], hills[i + 1]];
-            const from = near.x + (near.width / 2) * 0.85;
-            const to = far.x - (far.width / 2) * 0.85;
+            // Near the ends of the hills, where they come down to the water
+            const from = near.x + (near.width / 2) * 0.93;
+            const to = far.x - (far.width / 2) * 0.93;
             const gap = to - from;
 
             if (
@@ -436,7 +437,7 @@ export default class Designer {
                 PRNG.random() < BRIDGE_CHANCE
             ) {
                 this.plan.push(
-                    new SketchLayer("bridge", from, (near.y + far.y) / 2 - 8, gap)
+                    new SketchLayer("bridge", from, near.y - 4, gap)
                 );
             }
         }

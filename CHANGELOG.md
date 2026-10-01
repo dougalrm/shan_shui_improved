@@ -100,7 +100,7 @@ Six rounds of work took scrolling from jumping in 100px steps to a steady 60fps.
   - The once-a-second 60ms freezes in the user's trace were caused by the LastPass extension scanning the page, not by the app.
 
 ### Memory stays flat on long scrolls
-*(see git log: "Forget chunks far behind the view")*
+*`276751c`*
 
 - **Cause found:** a new `npm run soak` scrolls 200 screens and samples the page's heap. It grew about 3 MB per screen (79 MB, then 623 MB after 200 screens) while the DOM stayed the same size. The renderer kept the markup of every chunk it had ever made, about 1.5 MB each.
 - **What changed:** chunks more than 4 behind the visible ones are forgotten. A chunk is painted the same every time, so scrolling back regenerates it identically (checked: 80 layers in common, none different).

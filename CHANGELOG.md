@@ -256,7 +256,7 @@ What `PillarLayer` now does with them:
 - **Motion:** each drifts slowly at its own pace, animated by the compositor and off for reduced motion.
 
 ### 14. Seasons and weather
-*(this commit)*
+*`4dfeb84`*
 
 - **How to choose:** `?season=spring|autumn|winter` and `?weather=rain`, defaulting to summer and clear. They combine with `?style=`, and links, Share and Reload keep them.
 - **Winter:**

@@ -15,7 +15,12 @@ import { Controls } from "./ui/Controls";
 import { Shortcuts } from "./ui/Shortcuts";
 import { config } from "./config";
 import { debounce } from "./utils/utils";
-import { pictureUrl, setMountainStyle, styleFromUrl } from "./utils/style";
+import {
+    getPaintingOptions,
+    optionsFromUrl,
+    pictureUrl,
+    setPaintingOptions,
+} from "./utils/style";
 import { useKeyboardControls } from "./ui/useKeyboardControls";
 
 const WORLD_HEIGHT = config.world.height;
@@ -40,7 +45,7 @@ export const App = (): ReactElement => {
     const initalSeed = urlSeed || currentDate;
 
     if (!PRNG.alreadyPopulated) {
-        setMountainStyle(styleFromUrl());
+        setPaintingOptions(optionsFromUrl());
 
         if (urlSeed) {
             PRNG.seed = urlSeed;
@@ -233,6 +238,12 @@ export const App = (): ReactElement => {
             window.removeEventListener("keydown", wake);
         };
     }, [autoScroll]);
+
+    // Season and weather restyle the page (palette, falling snow or rain), see style.css
+    useEffect(() => {
+        const { season, weather } = getPaintingOptions();
+        document.body.classList.add(`season-${season}`, `weather-${weather}`);
+    }, []);
 
     useEffect(() => {
         document.body.classList.toggle("ui-idle", idle);

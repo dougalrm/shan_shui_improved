@@ -15,15 +15,21 @@ The landscape unrolls on its own. Drag it (or flick it) to look around, or use a
 
 The painting follows the conventions of Shan Shui (山水) ink landscapes: pure ink tones on silk, mist dissolving the feet of the mountains, paler peaks in the distance, a rhythm of open water and gathering massifs crowned by a host peak, moss dots, waterfalls, travellers, fishing boats and geese, and now and then a classical poem inscribed in the sky with a red seal. Night mode paints it by moonlight. The same `?seed=` always paints the same landscape, on any screen.
 
-Mountain styles, chosen in the URL:
+Painting options, chosen in the URL (they combine, e.g. `?style=pillars&season=winter`):
 
-| URL | Mountains |
+| URL | Effect |
 | --- | --- |
 | `?style=classic` (default) | Rounded Shan Shui mountains |
 | `?style=pillars` | Sheer sandstone columns like Zhangjiajie, rising out of mist |
 | `?style=blend` | Stretches of pillars among classic mountains |
+| `?season=summer` (default) | Pure ink |
+| `?season=spring` | Blossom on the deciduous trees |
+| `?season=autumn` | Ochre and rust leaves |
+| `?season=winter` | A snow scene: washed grey sky, snow-covered mountains, falling snow |
+| `?weather=clear` (default) | — |
+| `?weather=rain` | Fine falling rain, paler ink, more cloud |
 
-The style is part of the link: Share and Reload keep it, and the same seed and style always paint the same picture.
+The options are part of the link: Share and Reload keep them, and the same seed and options always paint the same picture.
 
 | Key | Action |
 | --- | --- |

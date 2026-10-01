@@ -9,6 +9,7 @@ import SketchLayer from "./SketchLayer";
 import WaterLayer from "./layers/WaterLayer";
 import PillarLayer from "./layers/PillarLayer";
 import Designer from "./Designer";
+import { getSeason, getWeather } from "../utils/style";
 import InscriptionLayer from "./layers/InscriptionLayer";
 import BirdsLayer from "./layers/BirdsLayer";
 import BridgeLayer from "./layers/BridgeLayer";
@@ -45,7 +46,17 @@ export default class Frame {
      * Create active layers based on the given plan and adds it to Frame.layers
      * @param {SketchLayer} - plan created by the designer
      */
-    public sketchToLayer({ tag, x, y, width, height }: SketchLayer): void {
+    public sketchToLayer(sketch: SketchLayer): void {
+        // Snow and rain soften everything a little: winter textures read as snow-covered,
+        // rain veils the scene
+        const strength =
+            (getSeason() === "winter" ? 0.85 : 1) *
+            (getWeather() === "rain" ? 0.8 : 1);
+
+        withInkStrength(strength, () => this.buildLayer(sketch));
+    }
+
+    private buildLayer({ tag, x, y, width, height }: SketchLayer): void {
         let layer = undefined;
         let seed: number;
 

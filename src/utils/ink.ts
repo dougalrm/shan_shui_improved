@@ -134,18 +134,18 @@ export const inkStylesheet = (): string => {
 
 /**
  * Shared SVG definitions the picture refers to, e.g. `url(#mist)`. They must be in the page
- * (and in downloaded files) once.
+ * (and in downloaded files) once. Mist and cloud strength follow the palette's --mist.
  */
 export const inkDefs = (): string => `
-    <radialGradient id="mist" cx="0.5" cy="1" r="0.5">
-        <stop offset="0" style="stop-color:var(--silk);stop-opacity:0.95"/>
-        <stop offset="0.55" style="stop-color:var(--silk);stop-opacity:0.8"/>
-        <stop offset="0.8" style="stop-color:var(--silk);stop-opacity:0.35"/>
-        <stop offset="1" style="stop-color:var(--silk);stop-opacity:0"/>
+    <radialGradient id="mist" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" style="stop-color:var(--silk);stop-opacity:calc(0.95 * var(--mist, 1))"/>
+        <stop offset="0.55" style="stop-color:var(--silk);stop-opacity:calc(0.8 * var(--mist, 1))"/>
+        <stop offset="0.8" style="stop-color:var(--silk);stop-opacity:calc(0.35 * var(--mist, 1))"/>
+        <stop offset="1" style="stop-color:var(--silk);stop-opacity:calc(0 * var(--mist, 1))"/>
     </radialGradient>
     <radialGradient id="cloud" cx="0.5" cy="0.55" r="0.5">
-        <stop offset="0" style="stop-color:var(--silk);stop-opacity:0.95"/>
-        <stop offset="0.5" style="stop-color:var(--silk);stop-opacity:0.85"/>
-        <stop offset="0.8" style="stop-color:var(--silk);stop-opacity:0.4"/>
-        <stop offset="1" style="stop-color:var(--silk);stop-opacity:0"/>
+        <stop offset="0" style="stop-color:var(--silk);stop-opacity:calc(0.95 * var(--mist, 1))"/>
+        <stop offset="0.5" style="stop-color:var(--silk);stop-opacity:calc(0.85 * var(--mist, 1))"/>
+        <stop offset="0.8" style="stop-color:var(--silk);stop-opacity:calc(0.4 * var(--mist, 1))"/>
+        <stop offset="1" style="stop-color:var(--silk);stop-opacity:calc(0 * var(--mist, 1))"/>
     </radialGradient>`;

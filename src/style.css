@@ -12,10 +12,32 @@
     /* Pure ink (水墨): warm black ink on white silk, seen through cream paper */
     --ink: #171512;
     --silk: #ffffff;
+    /* What shows where nothing is painted: sky and water. Usually the bare silk */
+    --ground: #ffffff;
+    /* Falling snow */
+    --flake: #ffffff;
     /* Colour of the light on the paper texture, which is multiplied over everything */
     --paper-light: #f0e7d0;
     /* Cinnabar seal paste */
     --seal: #b3302a;
+}
+
+/* Winter: painted as ink painters paint snow. Sky and water are washed grey, so the mountains,
+   left as bare silk, read as snow-covered, with dark rocks and moss showing through */
+body.season-winter {
+    --ground: #d5d2ca;
+    /* Silk-white mist would glow against the washed sky: keep it thin */
+    --mist: 0.5;
+}
+
+body.darkmode.season-winter {
+    --ground: #1b1d22;
+    --silk: #3b4049;
+}
+
+/* Rain: a greyer, damper light */
+body.weather-rain {
+    --paper-light: #e2ddd0;
 }
 
 /* Night: pale ink on dark silk, as if lit by the moon */
@@ -23,6 +45,8 @@ body.darkmode {
     /* Dimmer than white, so dense foliage glows softly rather than blazing */
     --ink: #cdc6b5;
     --silk: #23262d;
+    --ground: #23262d;
+    --flake: #e6e2d8;
     --paper-light: #e4dfd3;
     --seal: #9c3a31;
     --moon: #eee8d8;
@@ -91,7 +115,7 @@ input.InputSeed {
     position: fixed;
     inset: 0;
     overflow: hidden;
-    background: var(--silk);
+    background: var(--ground);
     cursor: grab;
     /* Drags pan the picture instead of scrolling or zooming the page */
     touch-action: none;
@@ -447,6 +471,67 @@ div#Shortcuts {
 
 body.darkmode div#Shortcuts .Panel {
     filter: invert(1) sepia(1);
+}
+
+/* Falling snow or rain: sheets taller than the window by four tiles, sliding down four tiles and
+   repeating. Sliding whole tiles keeps the loop seamless */
+#Weather {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+
+    & > div {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        top: calc(var(--tile) * -4);
+        height: calc(100% + var(--tile) * 4);
+        will-change: transform;
+        animation: fall linear infinite;
+    }
+
+    &.snow > div {
+        background-color: var(--flake);
+    }
+
+    &.snow > .Far {
+        opacity: 0.7;
+        animation-duration: 38s;
+    }
+
+    &.snow > .Near {
+        animation-duration: 22s;
+    }
+
+    &.rain > div {
+        background-color: var(--ink);
+        opacity: 0.22;
+    }
+
+    &.rain > .Far {
+        animation-duration: 1.6s;
+    }
+
+    &.rain > .Near {
+        opacity: 0.3;
+        animation-duration: 1s;
+    }
+}
+
+@keyframes fall {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(0, calc(var(--tile) * 4), 0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #Weather > div {
+        animation: none;
+    }
 }
 
 @keyframes drift {

@@ -4,7 +4,7 @@ import Range from "./Range";
 import SketchLayer from "./SketchLayer";
 import { LayerType } from "../types/LayerType";
 import { config } from "../config";
-import { getMountainStyle } from "../utils/style";
+import { getMountainStyle, getWeather } from "../utils/style";
 
 const BACKGROUND_MOUNTAIN_INTERVAL =
     config.designer.backgroundMountain.interval;
@@ -493,7 +493,8 @@ export default class Designer {
         // doesn't change anything placed before.
         let bands = 0;
         for (let x = range.start; x < range.end && bands < CLOUD_PER_CHUNK; x += 200) {
-            if (intensity(x) < CLOUD_INTENSITY || PRNG.random() > CLOUD_CHANCE) continue;
+            const chance = CLOUD_CHANCE * (getWeather() === "rain" ? 2.5 : 1);
+            if (intensity(x) < CLOUD_INTENSITY || PRNG.random() > chance) continue;
 
             this.plan.push(
                 new SketchLayer(

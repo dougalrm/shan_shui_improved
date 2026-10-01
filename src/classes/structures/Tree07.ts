@@ -3,6 +3,7 @@ import Structure from "../Structure";
 import PRNG from "../PRNG";
 import Perlin from "../Perlin";
 import Point from "../Point";
+import { foliageColor } from "../../utils/season";
 import Element from "../Element";
 import { midPoint, triangulate } from "../../utils/polytools";
 /**
@@ -70,12 +71,15 @@ export default class Tree07 extends Structure {
             );
         }
 
-        T = triangulate(lines, 50, true, true).concat(T);
+        const trunk = triangulate(lines, 50, true, true);
+        T = trunk.concat(T);
 
         for (let k = 0; k < T.length; k++) {
             const m = midPoint(T[k]);
             const c = (Perlin.noise(m.x * 0.02, m.y * 0.02) * 200 + 50) | 0;
-            const co = `rgba(${c},${c},${c},0.8)`;
+            // The trunk stays ink; the foliage takes the season's colour
+            const co =
+                k < trunk.length ? `rgba(${c},${c},${c},0.8)` : foliageColor(c, 0.8);
             this.addAtStart(new Element(T[k], 0, 0, co, co));
         }
     }

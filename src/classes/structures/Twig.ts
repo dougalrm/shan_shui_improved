@@ -3,10 +3,29 @@ import Structure from "../Structure";
 import PRNG from "../PRNG";
 import Point from "../Point";
 import Stroke from "../elements/Stroke";
+import { getSeason } from "../../utils/style";
 
 /**
  * Class representing a generator for a twig with branches and leaves.
  */
+/** Spring blossom: soft peach and plum pinks, with white */
+const BLOSSOM = ["rgba(222,140,150,0.75)", "rgba(236,176,180,0.8)", "rgba(250,236,236,0.9)"];
+/** Autumn leaves: ochre, rust and a few still green-grey */
+const AUTUMN = ["rgba(186,120,58,0.7)", "rgba(168,78,50,0.7)", "rgba(200,150,70,0.65)"];
+
+/** The colour of a leaf at the tip of a twig, by season */
+const leafColor = (depth: number): string => {
+    const ink = `rgba(100,100,100,${(0.5 + depth * 0.2).toFixed(3)})`;
+    const season = getSeason();
+
+    if (season === "spring" && PRNG.random() < 0.75) return PRNG.randomChoice(BLOSSOM);
+    if (season === "autumn" && PRNG.random() < 0.7) return PRNG.randomChoice(AUTUMN);
+    return ink;
+};
+
+/** Blossoms are smaller and rounder than leaves */
+const leafSize = (): number => (getSeason() === "spring" ? 0.6 : 1);
+
 export default class Twig extends Structure {
     /**
      * Generates a twig with branches and leaves.
@@ -65,7 +84,8 @@ export default class Twig extends Structure {
                     )
                 );
             }
-            if (i === length - 1 && leaves > 0) {
+            // Bare in winter
+            if (i === length - 1 && leaves > 0 && getSeason() !== "winter") {
                 for (let j = 0; j < 5; j++) {
                     const dj = (j - 2.5) * 5;
                     const bfunc = function (x: number) {
@@ -85,11 +105,9 @@ export default class Twig extends Structure {
                             angle / 2 +
                                 Math.PI / 2 +
                                 Math.PI * PRNG.random(-0.1, 0.1),
-                            `rgba(100,100,100,${(0.5 + depth * 0.2).toFixed(
-                                3
-                            )})`,
-                            PRNG.random(15, 27) * strokeWidth,
-                            PRNG.random(6, 9) * strokeWidth,
+                            leafColor(depth),
+                            PRNG.random(15, 27) * strokeWidth * leafSize(),
+                            PRNG.random(6, 9) * strokeWidth * leafSize(),
                             0.5,
                             bfunc
                         )

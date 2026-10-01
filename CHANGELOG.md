@@ -8,6 +8,7 @@ Everything changed since this fork was taken from upstream [Megaemce/shan_shui](
 - **Controls** now include drag and fling, trackpad and wheel panning, a play/pause bar and keyboard shortcuts.
 - **The art** reads as a pure-ink Shan Shui painting: ink tones, mist, depth, compositional rhythm, inscriptions and seals, brushwork, and motifs. There is a real night mode.
 - **Mountain styles:** Zhangjiajie-like pillars are available with `?style=pillars` or `?style=blend`.
+- **More scenery:** seasons (`?season=`), rain (`?weather=`), paths, bridges and drifting clouds.
 - **Seeds**: the same `?seed=` now paints the same landscape on any screen. Seeds from before these changes paint different pictures now.
 
 ---
@@ -219,10 +220,61 @@ The goal was for the app to read as a Shan Shui ink painting rather than line ar
 - **Links:** the style is part of the link. Opening `?style=pillars` alone gets a fresh seed that keeps the style, Reload and Share keep it, and an unknown style falls back to classic.
 - **Main files:** new `utils/style.ts`, `classes/layers/PillarLayer.ts`, `classes/structures/Pillar.ts` and `classes/structures/Mist.ts` (the foot mist, now shared). `withInkStrength` now multiplies when nested.
 
+### 10. Waterfalls fixed
+*`7974e76`*
+
+- **Before:** the two-tier waterfall set its lower drop to one side. With a nearer mountain in front, that drop could sit on top of it and read as a second waterfall hanging in the air.
+- **Now:** one continuous fall from a lip of rock, ending in the mist at its own mountain's foot.
+- **Seeds:** this changes classic pictures.
+
+### 11. Pillars laid out like the real Wulingyuan peak forest
+*`7014472`*
+
+Research on how the landscape formed gave three rules:
+- **Common summit level:** the pillars were carved from one plateau, so nearby summits sit near a common height.
+- **Erosion stages:** from the high ground down to the valleys, the land runs from flat-topped mesas, to peak walls, to pillar forests, to low remnant peaks.
+- **Joint lines:** vertical joints line the pillars up in rows and fins, with narrow gorges between them.
+
+What `PillarLayer` now does with them:
+- **Stages:** it picks a stage from the landscape's intensity.
+- **Groups:** columns stand in groups along joint lines, sharing a summit level, with misty gorges between the groups.
+- **Ranks:** back ranks are smaller, higher and paler, and rise out of forest canopy and mist.
+- **Arches:** a natural stone arch occasionally bridges two columns, like the "First Bridge Under Heaven".
+- **Columns and density:** columns are sturdier, with thickly wooded summits. Pillar country is airier, and its ranks spread into the foreground.
+- **Classic:** unchanged by this commit.
+
+### 12. Paths and bridges
+*`d8eb825`*
+
+- **Paths:** faint, broken switchback footpaths climb some classic mountains.
+- **Bridges:** foreground hills with a small gap between them are joined by a humped stone arch or a plank bridge on piers, sometimes with a traveller crossing.
+
+### 13. Drifting cloud bands
+*`2a03cd6`*
+
+- **Bands:** long soft bands of cloud lie across the massifs at mid-height, over classic mountains and pillars.
+- **Motion:** each drifts slowly at its own pace, animated by the compositor and off for reduced motion.
+
+### 14. Seasons and weather
+*(this commit)*
+
+- **How to choose:** `?season=spring|autumn|winter` and `?weather=rain`, defaulting to summer and clear. They combine with `?style=`, and links, Share and Reload keep them.
+- **Winter:**
+  - Painted the way ink painters paint snow. The sky and water are washed grey (`--ground`), so the mountains, left as bare silk, read as snow-covered, with dark rocks and moss showing through.
+  - Textures are lighter, deciduous trees bare, and foliage lightened.
+  - Snow falls, and mist and clouds are thinned (`--mist`) so they don't glow against the grey.
+- **Spring:** blossom pinks on the deciduous trees, as twig blossom and tinted foliage wash.
+- **Autumn:** ochre and rust leaves, half-mixed into the ink wash so the shading stays.
+- **Rain:** fine slanting rain, paler ink, a greyer light and more cloud.
+- **How the effects are drawn:** falling snow and rain are two parallax sheets with repeating masks, coloured from the palette and moved by the compositor. They're still for reduced motion.
+- **Mist:** it is now a soft ellipse fading on every side, so it has no edge against a washed sky. This slightly changes the mist in every style.
+- **Seeds:** summer and clear weather paint exactly what they did before this commit, apart from the mist shape.
+
 ---
 
 ## Known limits and ideas not yet built
 
 - **Font in downloads:** downloaded SVGs don't embed the calligraphy font. They fall back to an installed Kai font.
 - **Waterfall placement:** waterfalls sometimes start partway down a slope rather than at a visible cliff edge.
-- **Ideas not built:** paths and bridges, cloud bands across massifs, seasons and weather, and replacing the "screen too small" `alert()` shown on narrow windows.
+- **Narrow screens:** the "screen too small" `alert()` is still shown on narrow windows.
+- **Snow on trees:** in winter, trees are lightened rather than drawn with snow lying on their branches.

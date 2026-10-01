@@ -5,6 +5,7 @@ import { RenderedLayer } from "../classes/Renderer";
 import { runWhenIdle } from "../utils/idle";
 import { usePanGestures } from "./usePanGestures";
 import { inkDefs } from "../utils/ink";
+import { Weather } from "./Weather";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 /** Only show the loader if rendering takes longer than this (ms) */
@@ -263,6 +264,7 @@ export const ScrollableCanvas = ({
                     aria-hidden="true"
                     dangerouslySetInnerHTML={{ __html: `<defs>${inkDefs()}</defs>` }}
                 />
+                <Weather />
                 {/* The paper texture never moves, so it is painted once on its own layer */}
                 <svg
                     id="Paper"

@@ -4,7 +4,7 @@ import { GeneratedFrame, GeneratorRequest } from "../workers/messages";
 import { LayerType } from "../types/LayerType";
 import { config } from "../config";
 import { inkDefs, inkStylesheet } from "../utils/ink";
-import { getMountainStyle } from "../utils/style";
+import { getPaintingOptions } from "../utils/style";
 
 const TAG_ORDER = config.renderer.tagOrder;
 const CHUNK_WIDTH = config.world.chunkWidth;
@@ -140,7 +140,7 @@ export default class Renderer {
                 this.send({
                     type: "seed",
                     seed: PRNG.rawSeed,
-                    style: getMountainStyle(),
+                    options: getPaintingOptions(),
                 });
             });
     }
@@ -165,7 +165,7 @@ export default class Renderer {
             worker.postMessage({
                 type: "seed",
                 seed: PRNG.rawSeed,
-                style: getMountainStyle(),
+                options: getPaintingOptions(),
             });
         }
         this.worker.postMessage(request);
@@ -225,7 +225,7 @@ export default class Renderer {
         const box = `x="${range.start}" y="0" width="${range.length}" height="${windowHeight}"`;
         const content: string = `<svg xmlns="http://www.w3.org/2000/svg" width="${range.length}" height="${windowHeight}" viewBox="${viewbox}">
     <style>
-        svg { --ink: ${color("--ink")}; --silk: ${color("--silk")}; --seal: ${color("--seal")}; }
+        svg { --ink: ${color("--ink")}; --silk: ${color("--silk")}; --seal: ${color("--seal")}; --mist: ${color("--mist") || 1}; }
         ${inkStylesheet()}
     </style>
     <defs>
@@ -237,7 +237,7 @@ export default class Renderer {
             </feDiffuseLighting>
         </filter>
     </defs>
-    <rect id="Silk" ${box} fill="${color("--silk")}"/>
+    <rect id="Silk" ${box} fill="${color("--ground")}"/>
     <g id="main">
 ${svg}
     </g>

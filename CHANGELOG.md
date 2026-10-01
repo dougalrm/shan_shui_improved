@@ -140,7 +140,7 @@ Six rounds of work took scrolling from jumping in 100px steps to a steady 60fps.
 
 
 ### The painting's settings panel
-*(see git log: "A settings panel for the painting, in place of the old menu")*
+*`0ba06cc`*
 
 - **The problem:** the old menu (☰ at the top left) mostly duplicated other controls or was hard to use:
   - a position readout with a step box and ◀ ▶ buttons;

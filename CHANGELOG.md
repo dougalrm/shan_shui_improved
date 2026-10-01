@@ -449,7 +449,7 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
   - `npm run shots` now steps one page at a time and prints where each view starts. It used to skip about 1,000 units between views.
 
 ### 29. A journey through the landscape
-*(see git log: "A journey through the scenes: road, villages, temples, pagodas")*
+*`c84f827`*
 
 - **The problem:** people and buildings were scattered at random, so the scroll had no thread to follow through it.
 - **A road and travellers:** a faint, broken road now runs along the near bank and stops at inlets. Now and then a traveller with a staff walks it, sometimes followed by a young attendant. They are most frequent in the near scenes (`config.layers.bank.travellerChance`).

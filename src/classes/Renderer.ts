@@ -223,7 +223,7 @@ export default class Renderer {
         range: Range,
         windowHeight: number
     ): Promise<void> {
-        const filename: string = `${seed}-[${range.start}, ${range.end}].svg`;
+        const filename: string = `shan-shui_${seed}_${Math.round(range.start)}-${Math.round(range.end)}.svg`;
         const viewbox = `${range.start} 0 ${range.length} ${windowHeight}`;
         const palette = getComputedStyle(document.body);
         const color = (name: string) => palette.getPropertyValue(name).trim();

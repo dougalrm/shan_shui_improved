@@ -11,11 +11,11 @@ Discover the beauty of an ever-evolving Chinese landscape art. This project comb
 
 <img alt="Shan Shui example" src="./public/img/example.png" width="100%">
 
-The landscape unrolls on its own. Drag it (or flick it) to look around, or use a trackpad, the mouse wheel or the arrow keys. The bar at the bottom pauses it, changes the speed and goes fullscreen, and the controls fade away while you watch. In the menu section, you can find an option to download the whole or part of your art as an SVG or to share it with your friends.
+The landscape unrolls on its own. Drag it (or flick it) to look around, or use a trackpad, the mouse wheel or the arrow keys. The bar at the bottom pauses it, changes the speed and goes fullscreen, and the controls fade away while you watch. The ☰ button at the top left opens the painting's settings: the seed, the mountains, season, weather and light, a link to copy, and downloads of the view (or five screens of it) as an SVG. ☾ switches to night.
 
 The painting follows the conventions of Shan Shui (山水) ink landscapes: pure ink tones on silk, mist dissolving the feet of the mountains, paler peaks in the distance, scenes that move like a handscroll from wide level water to the near shore, layered valleys and towering massifs crowned by a host peak, moss dots, waterfalls, travellers, fishing boats and geese, and now and then a classical poem inscribed in the sky with a red seal. Night mode paints it by moonlight. The same `?seed=` always paints the same landscape, on any screen.
 
-Painting options, chosen in the URL (they combine, e.g. `?style=pillars&season=winter`):
+Painting options, chosen in the settings or the URL (they combine, e.g. `?style=pillars&season=winter`):
 
 | URL | Effect |
 | --- | --- |
@@ -31,8 +31,9 @@ Painting options, chosen in the URL (they combine, e.g. `?style=pillars&season=w
 | `?weather=fog` | Thick mist: the distance fades away, more cloud, banks of fog drifting across |
 | `?time=day` (default) | — |
 | `?time=dusk` | The sun going down over the far shore, a warm glow on the horizon and the water |
+| `?time=night` | By moonlight (without `?time=`, night follows the system's dark mode) |
 
-The options are part of the link: Share and Reload keep them, and the same seed and options always paint the same picture.
+The URL follows the settings, so the link always paints what is on screen: the same seed and options always paint the same picture. Changing the mountains, season or weather redraws the picture where you are; Back and Forward step through the pictures you painted.
 
 | Key | Action |
 | --- | --- |
@@ -43,7 +44,7 @@ The options are part of the link: Share and Reload keep them, and the same seed 
 | + − | Auto-scroll faster / slower |
 | F | Fullscreen |
 | H | Hide / show the controls |
-| D | Dark mode |
+| D | Night / daylight |
 | ? | List of shortcuts |
 
 ## 🏗️ Tech stack

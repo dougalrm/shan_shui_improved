@@ -126,7 +126,7 @@ Six rounds of work took scrolling from jumping in 100px steps to a steady 60fps.
   | + / − | Auto-scroll speed |
   | F | Fullscreen |
   | H | Hide or show the controls |
-  | D | Dark mode |
+  | D | Dark mode (now night / daylight, see the settings panel) |
   | ? | Shortcut list |
   | Esc | Close |
 
@@ -137,6 +137,30 @@ Six rounds of work took scrolling from jumping in 100px steps to a steady 60fps.
   - The menu's auto-scroll checkbox follows Space.
   - Clicking a button doesn't leave it focused, so Space still pauses.
 - **Main files:** new `ui/usePanGestures.ts`, `ui/useKeyboardControls.ts`, `ui/Controls.tsx` and `ui/Shortcuts.tsx`; `ScrollEngine.ts` gained `grab`, `dragTo`, `release` and `scrollTo`.
+
+
+### The painting's settings panel
+*(see git log: "A settings panel for the painting, in place of the old menu")*
+
+- **The problem:** the old menu (☰ at the top left) mostly duplicated other controls or was hard to use:
+  - a position readout with a step box and ◀ ▶ buttons;
+  - an Auto-scroll checkbox, the same as play/pause;
+  - start/end number boxes, "Auto-load" and "Import current range", just to download;
+  - Reload behind a confirm dialog.
+
+  The painting's own options could only be set by editing the URL.
+- **The new panel** is behind the ☰ button:
+  - **Seed:** type any word or number and press Enter (or Paint), or click New for a fresh landscape.
+  - **Mountains, Season, Weather and Light:** a row of buttons each. Changing the mountains, season or weather redraws the picture where you are (no jump back to the start). Changing the light only restyles it.
+  - **Copy link** confirms in place rather than with an alert.
+  - **Download view** and **Download ×5** (five screens from here on) save an SVG named `shan-shui_<seed>_<start>-<end>.svg`.
+  - A credit links to the original project.
+- **The URL follows the panel** (`replaceState` for options, a new history entry for a new seed), so the link always paints what is on screen. Back and Forward now move between the pictures you painted.
+- **Night is one of the lights:** `?time=night`. Without `?time=`, it follows the system's dark mode. The ☾ button and D toggle night and the light before it. Night is now a body class only; the per-element `darkmode` classes are gone.
+- **Removed:**
+  - the edge ◀ ▶ scroll buttons and the top-right GitHub button (dragging, the wheel, the keys and the bottom bar cover scrolling);
+  - the old `SettingPanel`, `Menu` and their interfaces.
+- **Works at night and on phones:** the panel inverts with the night palette and wraps to fit narrow screens.
 
 ---
 

@@ -10,7 +10,7 @@ const SHORTCUTS: Array<[string, string]> = [
     ["+ −", "Auto-scroll faster / slower"],
     ["F", "Fullscreen"],
     ["H", "Hide / show the controls"],
-    ["D", "Dark mode"],
+    ["D", "Night / daylight"],
     ["?", "This list"],
     ["Esc", "Close"],
 ];

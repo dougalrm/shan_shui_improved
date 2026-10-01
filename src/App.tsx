@@ -9,17 +9,20 @@ import React, {
 } from "react";
 import Renderer from "./classes/Renderer";
 import { ScrollableCanvas } from "./ui/ScrollableCanvas";
-import { SettingPanel } from "./ui/SettingPanel";
+import { PaintingPanel } from "./ui/PaintingPanel";
 import ScrollEngine from "./classes/ScrollEngine";
 import { Controls } from "./ui/Controls";
 import { Shortcuts } from "./ui/Shortcuts";
 import { config } from "./config";
 import { debounce } from "./utils/utils";
 import {
+    PaintingOptions,
+    TimeOfDay,
     getPaintingOptions,
     optionsFromUrl,
     pictureUrl,
     setPaintingOptions,
+    urlFor,
 } from "./utils/style";
 import { useKeyboardControls } from "./ui/useKeyboardControls";
 
@@ -31,6 +34,8 @@ const SPEEDS = [25, 50, 100, 200, 400];
 const DEFAULT_SPEED = 2;
 /** Start scrolling straight away, so the landscape unrolls on its own */
 const PLAY_ON_LOAD = true;
+/** The base distance the keys scroll by, see useKeyboardControls */
+const KEY_STEP = 100;
 /** Hide the controls and cursor after this long (ms) without the mouse moving, while playing */
 const IDLE_DELAY = 2500;
 
@@ -68,15 +73,12 @@ export const App = (): ReactElement => {
     const engine = engineRef.current;
 
     // State variables
-    const [step, setStep] = useState(100);
+    const [seed, setSeed] = useState(initalSeed);
+    const [options, setOptions] = useState<PaintingOptions>(getPaintingOptions);
     const [newPosition, setNewPosition] = useState<number>(0);
     const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
     const [windowHeight, setWindowHeight] = useState<number>(
         window.innerHeight
-    );
-    const [autoLoad, setAutoLoad] = useState<boolean>(false);
-    const [saveRange, setSaveRange] = useState<Range>(
-        new Range(0, (window.innerWidth * WORLD_HEIGHT) / window.innerHeight)
     );
     const [autoScroll, setAutoScroll] = useState<boolean>(PLAY_ON_LOAD);
     const [speedIndex, setSpeedIndex] = useState(DEFAULT_SPEED);
@@ -94,22 +96,11 @@ export const App = (): ReactElement => {
     // Cannot be done via setSeed as it will rerender the scene. Look at Menu.tsx
     Renderer.forwardCoverage = viewWidth / 2;
 
-    // Callback function to handle changes in the save range
-    const onChangeSaveRange = (newRange: Range) => {
-        setSaveRange(newRange);
-    };
-
     // Toggle auto-scrolling state
     // Stable, so the keyboard shortcuts (which depend on it) aren't re-registered on every render
     const toggleAutoScroll = useCallback(() => {
         setAutoScroll((current) => !current);
     }, []);
-
-    // Toggle auto-loading state and set the save range
-    const toggleAutoLoad = () => {
-        setAutoLoad((current) => !current);
-        setSaveRange(new Range(newPosition, newPosition + viewWidth));
-    };
 
     // Perform only on mount
     useEffect(() => {
@@ -139,12 +130,6 @@ export const App = (): ReactElement => {
         return () => engine.destroy();
     }, [engine]);
 
-    // Ease the picture by the given distance
-    const horizontalScroll = useCallback(
-        (value: number) => engine.scrollBy(value),
-        [engine]
-    );
-
     // Jump to a position without animating, e.g. after a reload
     const jumpTo = useCallback(
         (position: number) => {
@@ -153,13 +138,6 @@ export const App = (): ReactElement => {
         },
         [engine]
     );
-
-    // Keep the save range on the current view while auto-load is on
-    useEffect(() => {
-        if (autoLoad) {
-            setSaveRange(new Range(newPosition, newPosition + viewWidth));
-        }
-    }, [autoLoad, newPosition, viewWidth]);
 
     useEffect(() => engine.setScale(scale), [engine, scale]);
 
@@ -191,7 +169,7 @@ export const App = (): ReactElement => {
 
     useKeyboardControls({
         engine,
-        step,
+        step: KEY_STEP,
         togglePlay: toggleAutoScroll,
         changeSpeed,
         toggleFullscreen,
@@ -239,12 +217,87 @@ export const App = (): ReactElement => {
         };
     }, [autoScroll]);
 
-    // Season, weather and time of day restyle the page (palette, snow, rain, fog, the sun), see
-    // style.css
+    // Season, weather and time of day restyle the page (palette, snow, rain, fog, the sun, the
+    // night), see style.css
     useEffect(() => {
-        const { season, weather, time } = getPaintingOptions();
-        document.body.classList.add(`season-${season}`, `weather-${weather}`, `time-${time}`);
+        const { season, weather, time } = options;
+        const body = document.body.classList;
+        Array.from(body)
+            .filter((name) => /^(season|weather|time)-/.test(name))
+            .forEach((name) => body.remove(name));
+        body.add(`season-${season}`, `weather-${weather}`, `time-${time}`);
+        body.toggle("darkmode", time === "night");
+    }, [options]);
+
+    const redraw = useCallback(() => {
+        rendererRef.current.reset();
+        setReloadCount((count) => count + 1);
     }, []);
+
+    // Change some of the painting's options. The URL follows, so the link always paints what is
+    // on screen. The picture is redrawn where it is, unless only the light changed.
+    const changeOptions = useCallback(
+        (changes: Partial<PaintingOptions>) => {
+            const next = { ...getPaintingOptions(), ...changes };
+            const repaint = (["style", "season", "weather"] as const).some(
+                (key) => next[key] !== getPaintingOptions()[key]
+            );
+
+            setPaintingOptions(next);
+            setOptions(next);
+            window.history.replaceState(null, "", urlFor(PRNG.rawSeed.toString(), next));
+            if (repaint) redraw();
+        },
+        [redraw]
+    );
+
+    // Night and back to the light before it
+    const dayTime = useRef<TimeOfDay>(options.time === "night" ? "day" : options.time);
+    const toggleNight = useCallback(() => {
+        const { time } = getPaintingOptions();
+        if (time !== "night") dayTime.current = time;
+        changeOptions({ time: time === "night" ? dayTime.current : "night" });
+    }, [changeOptions]);
+
+    // Paint another seed, from the start. A new history entry, so Back returns to the last one.
+    const changeSeed = useCallback(
+        (next: string) => {
+            PRNG.seed = next;
+            setSeed(next);
+            window.history.pushState(null, "", pictureUrl(next));
+            redraw();
+            jumpTo(0);
+        },
+        [redraw, jumpTo]
+    );
+
+    // Back and Forward go to the picture in the URL
+    useEffect(() => {
+        const onPopState = () => {
+            const urlSeed = new URLSearchParams(window.location.search).get("seed");
+            const next = optionsFromUrl();
+            setPaintingOptions(next);
+            setOptions(next);
+            if (urlSeed) {
+                PRNG.seed = urlSeed;
+                setSeed(urlSeed);
+            }
+            redraw();
+            jumpTo(0);
+        };
+        window.addEventListener("popstate", onPopState);
+        return () => window.removeEventListener("popstate", onPopState);
+    }, [redraw, jumpTo]);
+
+    const download = useCallback(
+        (views: number) =>
+            rendererRef.current.download(
+                seed,
+                new Range(newPosition, newPosition + viewWidth * views),
+                WORLD_HEIGHT
+            ),
+        [seed, newPosition, viewWidth]
+    );
 
     useEffect(() => {
         document.body.classList.toggle("ui-idle", idle);
@@ -253,22 +306,13 @@ export const App = (): ReactElement => {
 
     return (
         <>
-            <SettingPanel
-                step={step}
-                setStep={setStep}
-                horizontalScroll={horizontalScroll}
-                autoScroll={autoScroll}
-                toggleAutoScroll={toggleAutoScroll}
-                newPosition={newPosition}
-                setNewPosition={jumpTo}
-                renderer={rendererRef.current}
-                windowWidth={viewWidth}
-                windowHeight={WORLD_HEIGHT}
-                saveRange={saveRange}
-                onChangeSaveRange={onChangeSaveRange}
-                toggleAutoLoad={toggleAutoLoad}
-                onReload={() => setReloadCount((count) => count + 1)}
-                initalSeed={initalSeed}
+            <PaintingPanel
+                seed={seed}
+                options={options}
+                onSeed={changeSeed}
+                onOptions={changeOptions}
+                onDownload={download}
+                onToggleNight={toggleNight}
             />
             <ScrollableCanvas
                 windowHeight={windowHeight}

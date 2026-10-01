@@ -356,7 +356,7 @@ The thatched pavilions (茅亭) on foreground hills read as shacks.
 - **The source:** the gully lines are gone. Dark boulders mark where the water rises.
 
 ### 23. More boats on the water
-*(see git log: "More boats on the water")*
+*`e753eac`*
 
 - **The problem:** boats had become rare: 20, 14 and 4 per 30 chunks on seeds 7, 3 and abc. Two earlier changes compounded. The chance had been cut to avoid fleets, and then the open-water check rejected more spots, leaving massif-heavy stretches with almost none.
 - **The chance:** raised everywhere, more on quiet open water, and capped at four boats per chunk so fleets can't return.

@@ -246,6 +246,33 @@ export const ScrollableCanvas = ({
     return (
         <div id="ScrollableCanvas">
             <div id="Canvas" ref={canvasRef}>
+                {/* The sun going down at dusk, low over the far shore: a pale vermilion disc in
+                    a warm glow, as ink painters add it */}
+                <svg
+                    id="Sun"
+                    width={windowWidth}
+                    height={windowHeight}
+                    aria-hidden="true"
+                >
+                    <defs>
+                        <radialGradient id="sunGlow">
+                            <stop offset="0.2" style={{ stopColor: "var(--sun)", stopOpacity: 0.3 }} />
+                            <stop offset="1" style={{ stopColor: "var(--sun)", stopOpacity: 0 }} />
+                        </radialGradient>
+                    </defs>
+                    <circle
+                        cx={windowWidth * 0.24}
+                        cy={windowHeight * 0.235}
+                        r={windowHeight * 0.16}
+                        fill="url(#sunGlow)"
+                    />
+                    <circle
+                        cx={windowWidth * 0.24}
+                        cy={windowHeight * 0.235}
+                        r={windowHeight * 0.036}
+                        style={{ fill: "var(--sun)", fillOpacity: 0.7 }}
+                    />
+                </svg>
                 {/* The moon, at night. It stays put in the sky while the landscape passes in
                     front of it, as a real one would */}
                 <svg

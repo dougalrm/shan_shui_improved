@@ -16,7 +16,8 @@ const RESOLUTION = config.element.blob.resolution;
  * Represents a blob
  */
 export default class Blob extends Element {
-    points: Point[] = []; // used by Tree07 only
+    /** The outline (Tree07 builds its foliage from it, snow lies on it) */
+    points: Point[] = [];
     /**
      * Constructor for the Blob class.
      * @param {number} x - X-coordinate of the blob.
@@ -75,8 +76,6 @@ export default class Blob extends Element {
 
         super(pointArray, 0, 0, fillColor, fillColor);
 
-        if (returnPoints) {
-            this.points = pointArray;
-        }
+        this.points = pointArray;
     }
 }

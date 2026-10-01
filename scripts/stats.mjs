@@ -10,7 +10,7 @@ const arg = (name) => {
     return i > 0 ? process.argv[i + 1] : undefined;
 };
 const CHUNKS = Number(arg("chunks") ?? 30);
-const asked = ["seed", "style", "season", "weather"].filter(arg);
+const asked = ["seed", "style", "season", "weather", "time"].filter(arg);
 const pictures = asked.length
     ? [Object.fromEntries([["seed", "7"], ...asked.map((k) => [k, arg(k)])])]
     : PICTURES;

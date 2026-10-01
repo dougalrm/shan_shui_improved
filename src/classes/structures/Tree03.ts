@@ -1,4 +1,5 @@
 import Blob from "../elements/Blob";
+import { isSnowy, snowCap } from "../../utils/snow";
 import Structure from "../Structure";
 import PRNG from "../PRNG";
 import Perlin from "../Perlin";
@@ -54,16 +55,18 @@ export default class Tree03 extends Structure {
                     },${(PRNG.random(0, 0.2) + parseFloat(leafcol[3])).toFixed(
                         3
                     )})`;
-                    this.add(
-                        new Blob(
+                    const leaf = new Blob(
                             newX + ox * PRNG.randomChoice([-1, 1]),
                             newY + PRNG.random(-1, 1) * strokeWidth,
                             (PRNG.random(-0.5, 0.5) * Math.PI) / 6,
                             lcol,
                             ox * 2,
                             PRNG.random(3, 9)
-                        )
-                    );
+                        );
+                    this.add(leaf);
+                    // Snow on the leaves in winter
+                    const snow = isSnowy() ? snowCap(leaf.points) : undefined;
+                    if (snow) this.add(snow);
                 }
             }
             pointArray[i] = new Point(

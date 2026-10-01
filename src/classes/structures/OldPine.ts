@@ -4,6 +4,7 @@ import Perlin from "../Perlin";
 import Point from "../Point";
 import Stroke from "../elements/Stroke";
 import Structure from "../Structure";
+import { isSnowy, snowCap, snowLine } from "../../utils/snow";
 
 const ink = (from: number, to: number) => `rgba(100,100,100,${PRNG.random(from, to).toFixed(2)})`;
 
@@ -95,6 +96,7 @@ export default class OldPine extends Structure {
         }
         const color = ink(0.75, 0.9);
         this.add(new Stroke(points, color, color, Math.max(3, width * 1.6), 0.9, 1, (t) => 1 - t * 0.75));
+        if (isSnowy()) this.add(snowLine(points, Math.max(2, width * 0.8)));
 
         // Pads along the outer part of the branch, the biggest at its end
         const pads = [];
@@ -184,5 +186,9 @@ export default class OldPine extends Structure {
                 );
             }
         }
+
+        // Snow lying on the pad in winter
+        const snow = isSnowy() ? snowCap(wash, 0.55) : undefined;
+        if (snow) this.add(snow);
     }
 }

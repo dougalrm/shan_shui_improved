@@ -4,6 +4,7 @@ import PRNG from "../PRNG";
 import Point from "../Point";
 import Stroke from "../elements/Stroke";
 import { getSeason } from "../../utils/style";
+import { isSnowy, snowLine } from "../../utils/snow";
 
 /**
  * Class representing a generator for a twig with branches and leaves.
@@ -126,6 +127,8 @@ export default class Twig extends Structure {
                 (x) => Math.cos((x * Math.PI) / 2)
             )
         );
+        // Snow along the twig in winter
+        if (isSnowy()) this.add(snowLine(pointArray, 1.6));
 
         return this;
     }

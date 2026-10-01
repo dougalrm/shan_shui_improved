@@ -25,9 +25,12 @@ Painting options, chosen in the URL (they combine, e.g. `?style=pillars&season=w
 | `?season=summer` (default) | Pure ink |
 | `?season=spring` | Blossom on the deciduous trees |
 | `?season=autumn` | Ochre and rust leaves |
-| `?season=winter` | A snow scene: washed grey sky, snow-covered mountains, falling snow |
+| `?season=winter` | A snow scene: washed grey sky, snow-covered mountains, snow on the trees, falling snow |
 | `?weather=clear` (default) | — |
 | `?weather=rain` | Fine falling rain, paler ink, more cloud |
+| `?weather=fog` | Thick mist: the distance fades away, more cloud, banks of fog drifting across |
+| `?time=day` (default) | — |
+| `?time=dusk` | The sun going down over the far shore, a warm glow on the horizon and the water |
 
 The options are part of the link: Share and Reload keep them, and the same seed and options always paint the same picture.
 

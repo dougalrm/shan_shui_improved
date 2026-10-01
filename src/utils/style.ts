@@ -6,22 +6,26 @@
  *   columns like Zhangjiajie, `blend` stretches of pillars among classic mountains
  * - `?season=`: `spring` blossom, `summer` (default), `autumn` turning leaves,
  *   `winter` snow
- * - `?weather=`: `clear` (default), `rain`
+ * - `?weather=`: `clear` (default), `rain`, `fog`
+ * - `?time=`: `day` (default), `dusk` with a low sun and a warm glow on the horizon
  */
 export type MountainStyle = "classic" | "pillars" | "blend";
 export type Season = "spring" | "summer" | "autumn" | "winter";
-export type Weather = "clear" | "rain";
+export type Weather = "clear" | "rain" | "fog";
+export type TimeOfDay = "day" | "dusk";
 
 export interface PaintingOptions {
     style: MountainStyle;
     season: Season;
     weather: Weather;
+    time: TimeOfDay;
 }
 
 const CHOICES: { [K in keyof PaintingOptions]: PaintingOptions[K][] } = {
     style: ["classic", "pillars", "blend"],
     season: ["summer", "spring", "autumn", "winter"],
-    weather: ["clear", "rain"],
+    weather: ["clear", "rain", "fog"],
+    time: ["day", "dusk"],
 };
 
 /** The first of each list of choices is the default */
@@ -29,6 +33,7 @@ const DEFAULTS: PaintingOptions = {
     style: "classic",
     season: "summer",
     weather: "clear",
+    time: "day",
 };
 
 let current: PaintingOptions = { ...DEFAULTS };
@@ -37,6 +42,7 @@ export const getPaintingOptions = (): PaintingOptions => current;
 export const getMountainStyle = (): MountainStyle => current.style;
 export const getSeason = (): Season => current.season;
 export const getWeather = (): Weather => current.weather;
+export const getTimeOfDay = (): TimeOfDay => current.time;
 
 export const setPaintingOptions = (options: PaintingOptions): void => {
     current = { ...options };
@@ -50,7 +56,12 @@ export const optionsFromUrl = (): PaintingOptions => {
         return CHOICES[key].includes(asked) ? asked : DEFAULTS[key];
     };
 
-    return { style: pick("style"), season: pick("season"), weather: pick("weather") };
+    return {
+        style: pick("style"),
+        season: pick("season"),
+        weather: pick("weather"),
+        time: pick("time"),
+    };
 };
 
 /** The URL for a seed, keeping the current options (defaults left out) */

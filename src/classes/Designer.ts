@@ -603,7 +603,7 @@ export default class Designer {
         let bands = 0;
         for (let x = range.start; x < range.end && bands < CLOUD_PER_CHUNK; x += 200) {
             const chance =
-                CLOUD_CHANCE * Scenes.profile(x).clouds * (getWeather() === "rain" ? 2.5 : 1);
+                CLOUD_CHANCE * Scenes.profile(x).clouds * (getWeather() === "clear" ? 1 : 2.5);
             if (intensity(x) < CLOUD_INTENSITY || PRNG.random() > chance) continue;
 
             this.plan.push(

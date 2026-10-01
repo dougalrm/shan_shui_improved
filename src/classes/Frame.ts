@@ -26,8 +26,11 @@ import { withInkStrength } from "../utils/ink";
  * @param {number} y - Where the layer stands
  * @returns {number} Ink strength for it, see withInkStrength
  */
-const depthStrength = (y: number) =>
-    0.5 + 0.5 * Math.min(1, Math.max(0, (y - 400) / 400));
+const depthStrength = (y: number) => {
+    const near = Math.min(1, Math.max(0, (y - 400) / 400));
+    // In fog the distance fades away much faster
+    return getWeather() === "fog" ? 0.25 + 0.75 * Math.pow(near, 1.4) : 0.5 + 0.5 * near;
+};
 
 
 /**
@@ -53,9 +56,10 @@ export default class Frame {
     public sketchToLayer(sketch: SketchLayer): void {
         // Snow and rain soften everything a little: winter textures read as snow-covered,
         // rain veils the scene
+        const weather = getWeather();
         const strength =
             (getSeason() === "winter" ? 0.85 : 1) *
-            (getWeather() === "rain" ? 0.8 : 1);
+            (weather === "rain" ? 0.8 : weather === "fog" ? 0.85 : 1);
 
         withInkStrength(strength, () => this.buildLayer(sketch));
     }

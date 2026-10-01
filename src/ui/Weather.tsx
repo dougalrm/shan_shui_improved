@@ -23,13 +23,19 @@ const raindrop = (x: number, y: number) => {
 };
 
 /**
- * Falling snow (winter) or rain (?weather=rain), over the picture and under the paper texture.
+ * Falling snow (winter), rain (?weather=rain) or drifting banks of fog (?weather=fog), over the
+ * picture and under the paper texture.
  * Each is two sheets of marks at different depths falling at different speeds, drawn with a
  * repeating mask so the colour comes from the palette, and moved by the compositor.
  */
 export const Weather = () => {
     const { season, weather } = getPaintingOptions();
-    const kind = weather === "rain" ? "rain" : season === "winter" ? "snow" : undefined;
+    const kind =
+        weather === "rain" || weather === "fog"
+            ? weather
+            : season === "winter"
+            ? "snow"
+            : undefined;
 
     // Made once: a different scatter on every visit is fine for weather
     const sheets = useMemo(() => {
@@ -43,6 +49,13 @@ export const Weather = () => {
             return [
                 { className: "Far", mask: tile(220, 40, raindrop), size: 220 },
                 { className: "Near", mask: tile(320, 26, raindrop), size: 320 },
+            ];
+        }
+        if (kind === "fog") {
+            // Soft banks of fog drifting slowly sideways (painted by style.css, no mask)
+            return [
+                { className: "Far", mask: undefined, size: 1400 },
+                { className: "Near", mask: undefined, size: 2000 },
             ];
         }
         return [];

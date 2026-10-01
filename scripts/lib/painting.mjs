@@ -48,10 +48,11 @@ export const loadGenerator = () => {
 };
 
 /** The painting options, filled in with the defaults */
-export const options = ({ style = "classic", season = "summer", weather = "clear" } = {}) => ({
+export const options = ({ style = "classic", season = "summer", weather = "clear", time = "day" } = {}) => ({
     style,
     season,
     weather,
+    time,
 });
 
 /** A short, stable hash of a string (cyrb53, as PRNG uses), in base 36 */
@@ -68,12 +69,13 @@ export const hash = (text) => {
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
 };
 
-/** The pictures the checks paint: every style, season and weather appears at least once */
+/** The pictures the checks paint: every style, season, weather and time of day appears at least once */
 export const PICTURES = [
     { seed: "7", style: "classic" },
     { seed: "3", style: "classic", season: "spring" },
     { seed: "abc", style: "pillars", season: "winter" },
     { seed: "7", style: "blend", season: "autumn", weather: "rain" },
+    { seed: "3", style: "classic", weather: "fog", time: "dusk" },
 ];
 
 export const describe = ({ seed, ...rest }) =>

@@ -239,10 +239,11 @@ export const App = (): ReactElement => {
         };
     }, [autoScroll]);
 
-    // Season and weather restyle the page (palette, falling snow or rain), see style.css
+    // Season, weather and time of day restyle the page (palette, snow, rain, fog, the sun), see
+    // style.css
     useEffect(() => {
-        const { season, weather } = getPaintingOptions();
-        document.body.classList.add(`season-${season}`, `weather-${weather}`);
+        const { season, weather, time } = getPaintingOptions();
+        document.body.classList.add(`season-${season}`, `weather-${weather}`, `time-${time}`);
     }, []);
 
     useEffect(() => {

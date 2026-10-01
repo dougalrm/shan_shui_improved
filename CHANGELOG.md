@@ -8,7 +8,7 @@ Everything changed since this fork was taken from upstream [Megaemce/shan_shui](
 - **Controls** now include drag and fling, trackpad and wheel panning, a play/pause bar and keyboard shortcuts.
 - **The art** reads as a pure-ink Shan Shui painting: ink tones, mist, depth, a handscroll's sequence of scenes, inscriptions and seals, brushwork, and motifs. There is a real night mode.
 - **Mountain styles:** Zhangjiajie-like pillars are available with `?style=pillars` or `?style=blend`.
-- **More scenery:** seasons (`?season=`), rain (`?weather=`), paths, bridges and drifting clouds.
+- **More scenery:** seasons (`?season=`), rain and fog (`?weather=`), dusk (`?time=dusk`), paths, bridges and drifting clouds.
 - **Seeds**: the same `?seed=` now paints the same landscape on any screen. Seeds from before these changes paint different pictures now.
 
 ---
@@ -488,6 +488,24 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 - **Placement:** `Designer.wantsFraming` uses noise peaks, so framing pieces are never in neighbouring chunks. They come most readily in near scenes (about one per 3–4 chunks) and rarely by level water (scene profile `framing`, `config.designer.framing.threshold`).
 - **Effect:** the near distance now has depth, a classic way to push the landscape back.
 
+### 32. Snow on the branches, fog and dusk
+*(see git log: "Snow on the branches, ?weather=fog and ?time=dusk")*
+
+- **Snow on the branches:** in winter, snow now lies on the trees as ink painters paint it, by leaving it unpainted. A new `utils/snow.ts` helps with this:
+  - **Leaves and needles:** the pines and conifers on the mountains and the bank (`Tree01`, `Tree03`) get a lid of bare silk on each leaf. It is thickest in the middle and thins to nothing at the ends, so the dark undersides still show (`snowCap`).
+  - **Twigs:** the bare twigs carry a ridge of snow (`snowLine`), so the winter pines on the foreground hills look snow-laden.
+  - **Old pines:** the framing pines get snow on their branches and needle pads.
+  - **Weight:** shapes too small for snow to show get none, which keeps winter chunks as light as summer ones. Only winter pictures change.
+- **`?weather=fog`:**
+  - The ink is lighter, and the distance fades much faster (a steeper depth curve), so ranges dissolve one behind another.
+  - There are more cloud bands, as in rain, and a pale, damp palette with thick mist.
+  - Wide, soft banks of fog drift slowly across the middle distance, as compositor animations that cost nothing.
+- **`?time=dusk`:**
+  - A pale vermilion sun sits low over the far shore in a soft glow. It is hidden at night, when the moon is up.
+  - There is a warm glow along the horizon and on the water, and the paper is warmer.
+  - It combines with every other option.
+- **Checks:** a fifth check picture covers fog and dusk. Frame pacing is unchanged with the fog banks drifting (60 fps, no late frames).
+
 ---
 
 ## Known limits and ideas not yet built
@@ -495,4 +513,3 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 - **Font in downloads:** downloaded SVGs don't embed the calligraphy font. They fall back to an installed Kai font.
 - **Waterfall placement:** waterfalls sometimes start partway down a slope rather than at a visible cliff edge.
 - **Narrow screens:** the "screen too small" `alert()` is still shown on narrow windows.
-- **Snow on trees:** in winter, trees are lightened rather than drawn with snow lying on their branches.

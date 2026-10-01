@@ -4,6 +4,7 @@ import MossDots from "../structures/MossDots";
 import PRNG from "../PRNG";
 import Perlin from "../Perlin";
 import Point from "../Point";
+import Scenes from "../Scenes";
 import Stroke from "../elements/Stroke";
 import Tree01 from "../structures/Tree01";
 import Tree02 from "../structures/Tree02";
@@ -35,7 +36,9 @@ export default class BankLayer extends Layer {
         const detail = (Perlin.noise(x * 0.015, 33.1) - 0.5) * 18;
         // An inlet now and then, where the bank falls away below the picture
         const inlet = Math.max(0, 0.32 - Perlin.noise(x * 0.0009, 47.3)) * 600;
-        return SHORE + roll + detail + inlet;
+        // The near shore comes forward in some scenes and falls back in others
+        const scene = Scenes.profile(x).shore;
+        return SHORE + scene + roll + detail + inlet;
     }
 
     /**

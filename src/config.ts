@@ -97,8 +97,6 @@ export const config = {
         farShore: {
             /** The far shore's waterline (the distant mountains stand on 230-280) */
             horizon: 272,
-            /** Roughly the share of the horizon that has far land along it (0-1) */
-            cover: 0.6,
         },
         bank: {
             /** Where the near shore runs, on average (the world is 900 tall) */
@@ -172,13 +170,41 @@ export const config = {
             birds: 7,
         },
     },
+    /**
+     * The scenes the scroll moves through (see classes/Scenes.ts). Each profile says what the
+     * scene asks of the landscape; they are blended across the borders between scenes.
+     */
+    scenes: {
+        /** The scroll opens quietly */
+        opening: "level" as const,
+        /** How long each kind of scene runs (world units; a chunk is 1000) */
+        length: {
+            level: [2000, 3500],
+            near: [1500, 3000],
+            deep: [2500, 4500],
+            high: [3000, 5000],
+        } as Record<"level" | "near" | "deep" | "high", [number, number]>,
+        /** What may follow each kind of scene: tension, then release */
+        next: {
+            level: ["deep", "near", "high"],
+            near: ["level", "deep", "deep"],
+            deep: ["high", "high", "near"],
+            high: ["level", "near", "near"],
+        } as Record<"level" | "near" | "deep" | "high", Array<"level" | "near" | "deep" | "high">>,
+        /** Width of the gradual change from one scene to the next */
+        blend: 800,
+        /** Noise on top of the scenes' intensity, so no two stretches are the same */
+        wobble: 0.2,
+        profiles: {
+            level: { intensity: 0.05, arc: 0.12, ranges: 6, depth: 0.35, height: 0.6, foreground: 0.6, shore: 5, farShore: 0.85, water: 1.5, clouds: 0.3 },
+            near: { intensity: 0.25, arc: 0.15, ranges: 3, depth: 0.45, height: 0.85, foreground: 2.6, shore: -35, farShore: 0.6, water: 1, clouds: 0.5 },
+            deep: { intensity: 0.45, arc: 0.25, ranges: 1.4, depth: 1.35, height: 0.8, foreground: 0.8, shore: 0, farShore: 0.45, water: 0.6, clouds: 1.3 },
+            high: { intensity: 0.5, arc: 0.5, ranges: 1.6, depth: 0.85, height: 1.15, foreground: 0.7, shore: 0, farShore: 0.35, water: 0.5, clouds: 1.8 },
+        },
+    },
     designer: {
         radius: 10, // The threshold radius for considering layers to be the same
         xStep: 50, // Step size along the x-axis for generating terrain.
-        intensity: {
-            /** How quickly the landscape moves between quiet stretches and massifs (per unit) */
-            frequency: 0.0004,
-        },
         sandbar: {
             /** Chance that a chunk has a sandbar, scaled down where the landscape is built up */
             chance: 0.7,
@@ -186,9 +212,9 @@ export const config = {
             width: { min: 220, max: 560 },
         },
         clouds: {
-            /** Chance per 200 units, where the landscape is at least `intensity` built up */
+            /** Chance per 200 units (scaled by the scene), where the landscape is at least `intensity` built up */
             chance: 0.14,
-            intensity: 0.5,
+            intensity: 0.35,
             /** At most this many bands per chunk */
             perChunk: 2,
             y: { min: 260, max: 470 },
@@ -255,6 +281,10 @@ export const config = {
                 max: 500,
             },
             yOffset: 400,
+            /** At most this many mountains stacked one in front of another at a spot */
+            maxRanks: 7,
+            /** Mountains get rarer as a chunk fills up, towards this many */
+            perChunk: 22,
         },
         bottomMountain: {
             probability: 0.1, // Probability of generating a flat mountain chunk.

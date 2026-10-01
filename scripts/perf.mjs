@@ -34,7 +34,7 @@ await chrome.send("Tracing.start", {
 await sleep(seconds * 1000);
 await chrome.send("Tracing.end");
 await done;
-chrome.close();
+await chrome.close();
 
 const swaps = events
     .filter((e) => e.name === "Display::DrawAndSwap" && e.ph === "X")

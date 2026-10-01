@@ -98,10 +98,16 @@ export const launch = async ({ headful = false, width = 1600, height = 900 } = {
         fs.writeFileSync(file, Buffer.from(reply.result.data, "base64"));
     };
 
-    const close = () => {
+    const close = async () => {
         ws.close();
+        const exited = new Promise((resolve) => chrome.once("exit", resolve));
         chrome.kill();
-        fs.rmSync(profile, { recursive: true, force: true });
+        await Promise.race([exited, sleep(3000)]);
+        try {
+            fs.rmSync(profile, { recursive: true, force: true });
+        } catch {
+            // Chrome may still be writing; the system cleans its temp folder anyway
+        }
     };
 
     await send("Page.enable");

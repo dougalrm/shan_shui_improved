@@ -3,11 +3,11 @@ import Layer from "../Layer";
 import PRNG from "../PRNG";
 import Perlin from "../Perlin";
 import Point from "../Point";
+import Scenes from "../Scenes";
 import Stroke from "../elements/Stroke";
 import { config } from "../../config";
 
 const HORIZON = config.layers.farShore.horizon;
-const COVER = config.layers.farShore.cover;
 const STEP = 6;
 
 /**
@@ -23,7 +23,9 @@ export default class FarShoreLayer extends Layer {
      * @returns {number} Height of the land above the horizon
      */
     static height(x: number): number {
-        const presence = Perlin.noise(x * 0.0011, 61.1) - (1 - COVER);
+        // More far shore across the wide water of the level scenes than behind the massifs
+        const cover = Scenes.profile(x).farShore;
+        const presence = Perlin.noise(x * 0.0011, 61.1) - (1 - cover);
         if (presence <= 0) return 0;
         // Rises gently from nothing at the ends of a stretch
         const ramp = Math.min(1, presence / 0.08);

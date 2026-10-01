@@ -6,7 +6,7 @@ Everything changed since this fork was taken from upstream [Megaemce/shan_shui](
 
 - **Scrolling** is smooth: it runs on the compositor, and generation happens in a web worker.
 - **Controls** now include drag and fling, trackpad and wheel panning, a play/pause bar and keyboard shortcuts.
-- **The art** reads as a pure-ink Shan Shui painting: ink tones, mist, depth, compositional rhythm, inscriptions and seals, brushwork, and motifs. There is a real night mode.
+- **The art** reads as a pure-ink Shan Shui painting: ink tones, mist, depth, a handscroll's sequence of scenes, inscriptions and seals, brushwork, and motifs. There is a real night mode.
 - **Mountain styles:** Zhangjiajie-like pillars are available with `?style=pillars` or `?style=blend`.
 - **More scenery:** seasons (`?season=`), rain (`?weather=`), paths, bridges and drifting clouds.
 - **Seeds**: the same `?seed=` now paints the same landscape on any screen. Seeds from before these changes paint different pictures now.
@@ -419,6 +419,34 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
   - **Placement:** each chunk gets two attempts, more likely in quiet stretches, kept clear of mountains and of each other.
   - **Frequency:** 7–13 per 30 chunks.
   - **Boats** keep off them.
+
+### 28. The scroll moves through scenes
+*(see git log: "The scroll moves through scenes, like a handscroll")*
+
+- **The problem:** a single noise curve set the pace. It drifted between busy and quiet but never built to anything, and its quiet stretches were mostly empty water.
+- **Scenes:** a new `Scenes` class (`src/classes/Scenes.ts`) plans the scroll as a sequence of scenes, after Guo Xi's three distances (三远):
+  - **Level** (平远): wide water seen across to the far shore, with low distant ranges, sandbars and boats.
+  - **Near:** the foreground comes forward, with more hills and groves on a higher near bank.
+  - **Deep** (深远): ranges layered one behind another, back into the distance.
+  - **High** (高远): a crowded massif that climbs to its host peak, with cloud bands.
+- **The order:** like a handscroll, it opens quietly on level water, then alternates tension and release. A high scene is followed by level water or the near shore, and deep ranges usually build up to a high scene (`config.scenes.next`). Scenes last about 1.5 to 5 chunks (`config.scenes.length`).
+- **Smooth changes:** each scene sets a profile (`config.scenes.profiles`) covering:
+  - how built up the landscape is, with an arc rising to the middle of the scene;
+  - how many middle ranges there are, how far back they're layered, and how tall they are;
+  - how many foreground hills there are, and where the near shoreline runs;
+  - how much far shore there is;
+  - how many sandbars, boats and cloud bands appear.
+
+  Profiles blend over 800 units at each border. The near bank and far shore read them too, so they change gradually, without seams.
+- **Determinism:** the sequence only depends on the seed (it uses its own hashed random numbers), so it is the same from any chunk.
+- **Lighter chunks:** each spot now stacks at most 7 mountains, spread over its depth, where it used to stack up to 16 that mostly hid behind each other. Mountains also get rarer as a chunk fills up. So even a massif's climax stays under about 4 MB of SVG, where some chunks used to reach 6 MB.
+- **Effect:**
+  - The scroll now has a shape: quiet openings, near shores, layered valleys and climaxes.
+  - The quiet stretches have low ranges and islands in them rather than wide empty water.
+  - Seeds paint different pictures from before this change.
+- **Tools:**
+  - `npm run stats` lists each picture's scenes.
+  - `npm run shots` now steps one page at a time and prints where each view starts. It used to skip about 1,000 units between views.
 
 ---
 

@@ -15,8 +15,9 @@ const pictures = asked.length
     ? [Object.fromEntries([["seed", "7"], ...asked.map((k) => [k, arg(k)])])]
     : PICTURES;
 
-const { startPicture, planChunk } = loadGenerator();
+const { startPicture, planChunk, Scenes } = loadGenerator();
 const rows = {};
+const sequences = {};
 
 for (const picture of pictures) {
     startPicture(picture.seed, options(picture));
@@ -30,6 +31,13 @@ for (const picture of pictures) {
         }
     }
     rows[describe(picture)] = counts;
+    const scenes = [];
+    for (let x = 0; x < CHUNKS * 1000; ) {
+        const scene = Scenes.at(x);
+        scenes.push(`${scene.kind} ${((scene.end - scene.start) / 1000).toFixed(1)}`);
+        x = scene.end;
+    }
+    sequences[describe(picture)] = scenes.join(", ");
 }
 
 const tags = [...new Set(Object.values(rows).flatMap(Object.keys))].sort();
@@ -40,4 +48,4 @@ for (const tag of tags) {
     console.log(tag.padEnd(width) + Object.values(rows).map((c) => String(c[tag] ?? 0).padStart(6)).join(""));
 }
 console.log("");
-Object.keys(rows).forEach((name, i) => console.log(`#${i + 1} ${name}`));
+Object.keys(rows).forEach((name, i) => console.log(`#${i + 1} ${name}\n   scenes (chunks long): ${sequences[name]}`));

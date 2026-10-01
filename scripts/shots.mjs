@@ -33,10 +33,14 @@ for (const query of queries) {
         await sleep(3000);
         const file = path.join(OUT, `${name}_${v}.jpg`);
         await chrome.screenshot(file);
-        console.log(path.relative(process.cwd(), file));
-        await chrome.key("PageDown");
+        // Where the view starts, in world units
+        const x = await chrome.evaluate(
+            `-new DOMMatrix(getComputedStyle(document.getElementById("World")).transform).m41 / (innerHeight / 900)`
+        );
+        console.log(`${path.relative(process.cwd(), file)}  from x=${Math.round(x)}`);
+        // A page is a little less than the view, so the views overlap slightly
         await chrome.key("PageDown");
     }
 }
 
-chrome.close();
+await chrome.close();

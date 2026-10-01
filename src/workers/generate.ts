@@ -3,6 +3,7 @@ import Frame from "../classes/Frame";
 import PRNG from "../classes/PRNG";
 import Perlin from "../classes/Perlin";
 import Range from "../classes/Range";
+import Scenes from "../classes/Scenes";
 import SketchLayer from "../classes/SketchLayer";
 import { GeneratedFrame } from "./messages";
 import { config } from "../config";
@@ -32,6 +33,7 @@ const seedChunk = (index: number) => {
 export const startPicture = (seed: string | number, options: PaintingOptions): void => {
     pictureSeed = seed;
     setPaintingOptions(options);
+    Scenes.start(seed);
     // Build the noise table now, from the picture's seed, so it doesn't depend on which
     // chunk happens to be generated first
     PRNG.seed = pictureSeed;
@@ -80,3 +82,6 @@ export const generateChunk = (index: number): GeneratedFrame => {
         })),
     };
 };
+
+/** For the checks and tools in scripts/ */
+export { Scenes };

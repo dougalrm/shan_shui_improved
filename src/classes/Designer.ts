@@ -1,6 +1,7 @@
 import PRNG from "./PRNG";
 import Perlin from "./Perlin";
 import Range from "./Range";
+import Scenes from "./Scenes";
 import SketchLayer from "./SketchLayer";
 import { LayerType } from "../types/LayerType";
 import { config } from "../config";
@@ -39,11 +40,12 @@ const MIDDLE_MOUNTAIN_WIDTH_MIN = config.designer.middleMountain.width.min;
 const MIDDLE_MOUNTAIN_XOFFSET_MIN = config.designer.middleMountain.xOffset.min;
 const MIDDLE_MOUNTAIN_XOFFSET_MAX = config.designer.middleMountain.xOffset.max;
 const MIDDLE_MOUNTAIN_YOFFSET = config.designer.middleMountain.yOffset;
+const MAX_RANKS = config.designer.middleMountain.maxRanks;
+const MAX_PER_CHUNK = config.designer.middleMountain.perChunk;
 const RADIUS = config.designer.radius;
 const WATER_HEIGHT = config.designer.water.height;
 const WATER_WIDTH = config.designer.water.width;
 const X_STEP = config.designer.xStep;
-const INTENSITY_FREQUENCY = config.designer.intensity.frequency;
 const HOST_PEAK_INTENSITY = config.designer.hostPeak.intensity;
 const HOST_PEAK_WIDTH_MIN = config.designer.hostPeak.width.min;
 const HOST_PEAK_WIDTH_MAX = config.designer.hostPeak.width.max;
@@ -102,18 +104,15 @@ export default class Designer {
 
     /**
      * How built up the landscape is at x, from 0 (open water, a few distant hills) to 1 (a
-     * massif crowned by a host peak). It changes slowly over thousands of units, giving the
-     * scroll its rhythm of quiet stretches and gatherings, like a painted handscroll.
-     * It only depends on x (and the picture's noise), so it is continuous across chunks.
+     * massif crowned by a host peak). The scenes the scroll moves through set it (see
+     * Scenes), giving the scroll its rhythm of quiet stretches and gatherings, like a painted
+     * handscroll. It only depends on x (and the picture's seed), so it is continuous across
+     * chunks.
      * @param {number} x - Position in the world
      * @returns {number} Intensity between 0 and 1
      */
     static intensity(x: number): number {
-        const noise = Perlin.noise(Math.max(0, x) * INTENSITY_FREQUENCY, 11.3);
-        // The noise mostly sits between 0.25 and 0.65: spread that over 0-1, so quiet
-        // stretches are the exception and the busiest parts reach the host peak threshold
-        const value = (noise - 0.25) / 0.35;
-        return Math.min(1, Math.max(0, value));
+        return Scenes.intensity(x);
     }
 
     /**
@@ -337,29 +336,42 @@ export default class Designer {
             // Pillar country is airier: each spot is a whole stretch of columns in ranks,
             // so fewer spots, stacked at most two deep, with mist-filled gorges between
             const pillars = Designer.isPillarCountry(x);
+            const scene = Scenes.profile(x);
+            // Fewer as the chunk fills up, so even the climax of a massif stays light enough
+            // to draw without holding up the scroll
+            const planned = this.plan.filter((layer) => layer.tag === "middleMountain").length;
+            const room = Math.max(0.15, 1 - planned / MAX_PER_CHUNK);
             const chance =
                 MIDDLE_MOUNTAIN_PROBABILITY *
-                (0.15 + 2.2 * Math.pow(here, 1.5)) *
+                (0.15 + 1.6 * Math.pow(here, 1.5)) *
+                scene.ranges *
+                room *
                 (pillars ? 0.75 : 1);
+            // Deep scenes layer their ranges further back to front
+            const depth = 480 * Math.min(1, yRange(x) * scene.depth);
             let stacked = 0;
 
             if (PRNG.random() < chance) {
                 // Pillar stretches step further between depths, so their ranks spread from
                 // the distance into the foreground rather than bunching at the back
-                for (let y = 0; y < yRange(x) * 480; y += pillars ? 130 : 30) {
-                    if (pillars && stacked >= 3) break;
+                // At most a few ranks per spot, spread over its depth: more would only hide
+                // behind each other (and weigh the page down)
+                const step = pillars ? 130 : Math.max(30, depth / MAX_RANKS);
+                for (let y = 0; y < depth; y += step) {
+                    if (stacked >= (pillars ? 3 : MAX_RANKS)) break;
                     const width = PRNG.random(
                         MIDDLE_MOUNTAIN_WIDTH_MIN,
                         MIDDLE_MOUNTAIN_WIDTH_MAX
                     );
-                    // Taller where the landscape is building up
-                    const height = PRNG.random(
-                        MIDDLE_MOUNTAIN_HEIGHT_MIN,
-                        MIDDLE_MOUNTAIN_HEIGHT_MIN +
-                            (MIDDLE_MOUNTAIN_HEIGHT_MAX -
-                                MIDDLE_MOUNTAIN_HEIGHT_MIN) *
-                                (0.35 + 0.65 * here)
-                    );
+                    // Taller where the landscape is building up, and in the high scenes
+                    const height =
+                        PRNG.random(
+                            MIDDLE_MOUNTAIN_HEIGHT_MIN,
+                            MIDDLE_MOUNTAIN_HEIGHT_MIN +
+                                (MIDDLE_MOUNTAIN_HEIGHT_MAX -
+                                    MIDDLE_MOUNTAIN_HEIGHT_MIN) *
+                                    (0.35 + 0.65 * here)
+                        ) * scene.height;
 
                     const xOffset =
                         x +
@@ -399,8 +411,11 @@ export default class Designer {
 
         // Generate BottomMountains
         for (let x = range.start; x < range.end; x += X_STEP) {
+            // Many where the near shore comes forward
             const chance =
-                BOTTOM_MOUNTAIN_PROBABILITY * (0.35 + 1.1 * intensity(x));
+                BOTTOM_MOUNTAIN_PROBABILITY *
+                (0.35 + 1.1 * intensity(x)) *
+                Scenes.profile(x).foreground;
 
             if (PRNG.random() < chance) {
                 for (let j = 0; j < PRNG.random(0, 4); j++) {
@@ -472,9 +487,11 @@ export default class Designer {
 
         // A sandbar now and then on the open water of the quiet stretches. Before the boats,
         // which keep off it
-        const quiet = 1 - intensity(range.start + range.length / 2);
+        const middle = range.start + range.length / 2;
+        const quiet = 1 - intensity(middle);
+        const openWater = Scenes.profile(middle).water;
         for (let attempt = 0; attempt < 2; attempt++) {
-            if (PRNG.random() > SANDBAR_CHANCE * (0.3 + 0.7 * quiet)) continue;
+            if (PRNG.random() > SANDBAR_CHANCE * (0.3 + 0.7 * quiet) * openWater) continue;
             const sandbar = new SketchLayer(
                 "sandbar",
                 PRNG.random(range.start, range.end - SANDBAR_WIDTH_MAX * 0.5),
@@ -496,7 +513,10 @@ export default class Designer {
         for (let x = range.start; x < range.end; x += X_STEP) {
             // Boats on the open water: more where it is quiet, a few even among the
             // massifs, and never a fleet (at most BOATS_PER_CHUNK)
-            const chance = BOAT_PROBABILITY * (0.35 + 0.65 * (1 - intensity(x)));
+            const chance =
+                BOAT_PROBABILITY *
+                (0.35 + 0.65 * (1 - intensity(x))) *
+                Scenes.profile(x).water;
             if (boats < BOATS_PER_CHUNK && PRNG.random() < chance) {
                 const y = PRNG.random(BOAT_Y_MIN, BOAT_Y_MAX);
                 const boatChunk = new SketchLayer("boat", x, y, BOAT_WIDTH);
@@ -558,7 +578,8 @@ export default class Designer {
         // doesn't change anything placed before.
         let bands = 0;
         for (let x = range.start; x < range.end && bands < CLOUD_PER_CHUNK; x += 200) {
-            const chance = CLOUD_CHANCE * (getWeather() === "rain" ? 2.5 : 1);
+            const chance =
+                CLOUD_CHANCE * Scenes.profile(x).clouds * (getWeather() === "rain" ? 2.5 : 1);
             if (intensity(x) < CLOUD_INTENSITY || PRNG.random() > chance) continue;
 
             this.plan.push(

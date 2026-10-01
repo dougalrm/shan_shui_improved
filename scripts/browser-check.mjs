@@ -47,7 +47,7 @@ for (const [name, width, height, scroll] of runs) {
     await sleep(2500);
     results.push([name, await chrome.evaluate(HASHES)]);
 }
-chrome.close();
+await chrome.close();
 
 const [[nameA, a], [nameB, b]] = results;
 const common = Object.keys(a).filter((k) => k in b);

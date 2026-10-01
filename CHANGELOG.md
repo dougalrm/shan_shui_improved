@@ -376,7 +376,7 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 | Punt | 20% | A boatman standing at the stern pushing a long pole into the water. 60% carry a seated passenger in a broad hat, with a faint wake |
 
 ### 25. A near bank joins the foreground hills
-*(see git log: "A near bank joins")*
+*`f1eb1cb`*
 
 - **The problem:** the foreground hills stood in open water right to the bottom of the picture, so they read as isolated islands, out of place.
 - **The bank:** a new "bank" layer (`BankLayer`) runs along the front of the whole picture. It is low ground, as in Shan Shui foregrounds, that the near hills now stand on, so they read as one continuous shore. Hills further back stay as islands in the lake, which keeps the depth.

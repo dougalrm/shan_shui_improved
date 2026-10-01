@@ -312,6 +312,16 @@ What `PillarLayer` now does with them:
   - the grain, which is gentler and finer, drawn as a seamless tile that scrolls with the picture. It sits on a strip three windows wide that re-anchors to whole tiles, so it never jumps.
 - **Downloads:** exports use the gentler texture too.
 
+### 19. Waterfalls you can actually see
+*(see git log: "Waterfalls you can see")*
+
+Counting them in the generator showed only 4 waterfalls in 12 chunks, all small (falls of 51–190 units, about 10 wide) and faint.
+
+- **Where they start:** in a saddle of the ridge, the dip between peaks where water would gather, high enough above the foot for a long fall. If a mountain has no saddle, a waterfall starts just below the high point instead. Very short drops are skipped.
+- **How often:** on 30% of tall mountains, up from 12%, and on 90% of host peaks.
+- **How they look:** they are wider (12–18 units, 1.4× on host peaks) and framed by darker washes of rock on both banks, fading down the fall, so the white water stands out the way ink painters frame it. The edges are firmer too.
+- **Result:** 7 waterfalls in the same stretch, falling 95–225 units, and clearly visible.
+
 ---
 
 ## Known limits and ideas not yet built

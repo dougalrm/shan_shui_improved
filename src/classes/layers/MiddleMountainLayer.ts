@@ -354,28 +354,39 @@ export default class MiddleMountainLayer extends Layer {
             this.add(new Path(turns));
         }
 
-        // WATERFALL down the face: nearly always on a host peak, now and then elsewhere
+        // WATERFALL down the face: nearly always on a host peak, often on other tall mountains.
+        // It starts in a saddle of the ridge (a dip between peaks), where water would gather,
+        // high enough above the foot for a long fall.
         const isHostPeak = height >= HOST_PEAK_HEIGHT_MIN;
-        if (
-            height > 250 &&
-            PRNG.random() < (isHostPeak ? 0.85 : 0.12)
-        ) {
-            // Spilling from just below the skyline
-            const ring = elementArray[0];
-            const j = Math.floor(
-                elementDetails / 2 + PRNG.random(-elementDetails / 6, elementDetails / 6)
-            );
-            const source = ring[j];
+        if (height > 250 && PRNG.random() < (isHostPeak ? 0.9 : 0.3)) {
+            const ridge = elementArray[0];
+            const foot = yOffset - height * 0.05;
+            let saddle: Point | undefined;
 
-            this.add(
-                new Waterfall(
-                    source.x + xOffset,
-                    source.y + yOffset + height * 0.12,
-                    // Ends in the mist at this mountain's own foot
-                    yOffset - height * 0.05,
-                    PRNG.random(9, 14) * (isHostPeak ? 1.4 : 1)
-                )
-            );
+            for (let j = Math.floor(elementDetails * 0.2); j < elementDetails * 0.8; j++) {
+                const point = ridge[j];
+                const isDip = point.y > ridge[j - 1].y && point.y >= ridge[j + 1].y;
+                const highEnough = foot - (point.y + yOffset) > height * 0.45;
+                if (isDip && highEnough && (!saddle || point.y > saddle.y)) saddle = point;
+            }
+            // No saddle: start a little below the highest point of the middle stretch
+            if (!saddle) {
+                saddle = ridge
+                    .slice(Math.floor(elementDetails * 0.3), Math.floor(elementDetails * 0.7))
+                    .reduce((top, point) => (point.y < top.y ? point : top));
+            }
+
+            const top = saddle.y + yOffset + height * 0.08;
+            if (foot - top > height * 0.3) {
+                this.add(
+                    new Waterfall(
+                        saddle.x + xOffset,
+                        top,
+                        foot,
+                        PRNG.random(12, 18) * (isHostPeak ? 1.4 : 1)
+                    )
+                );
+            }
         }
 
         // MIST over the foot

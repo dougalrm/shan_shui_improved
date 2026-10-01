@@ -22,14 +22,18 @@ export default class Waterfall extends Structure {
     constructor(x: number, top: number, bottom: number, width: number) {
         super();
 
-        const { left, right } = this.addWater(x, top, bottom, width);
+        // The dark rock on either side goes down first; the water is bare silk over it
+        const { left, right } = this.waterEdges(x, top, bottom, width);
+        this.addRockWash(left, -1);
+        this.addRockWash(right, 1);
+        this.addWater(left, right);
         this.addGully(x, top, width, bottom - top);
         this.addBanks(left, right);
         this.addBoulders(left[0], right[0]);
     }
 
-    /** The falling water: bare silk between edges that fade and break up as it falls */
-    private addWater(
+    /** The two edges of the falling water, swaying a little and spreading as it falls */
+    private waterEdges(
         x: number,
         top: number,
         bottom: number,
@@ -51,6 +55,38 @@ export default class Waterfall extends Structure {
             right.push(new Point(x + sway + half, y));
         }
 
+        return { left, right };
+    }
+
+    /**
+     * A band of darker wash on the rock beside the water, so the white fall stands out against
+     * it, as ink painters frame waterfalls. Strongest at the top, fading as the fall goes down.
+     */
+    private addRockWash(edge: Point[], side: number): void {
+        const pieces = 3;
+        const steps = edge.length - 1;
+
+        for (let p = 0; p < pieces; p++) {
+            const from = Math.floor((steps * p) / pieces);
+            const to = Math.floor((steps * (p + 1)) / pieces);
+            const inner = edge.slice(from, to + 1);
+            const outer = inner.map(
+                (point, i) =>
+                    new Point(
+                        point.x + side * (10 + 6 * Math.sin((Math.PI * (from + i)) / steps)),
+                        point.y
+                    )
+            );
+            const ink = `rgba(70,70,70,${(0.22 - p * 0.06).toFixed(2)})`;
+
+            this.add(new Element(inner.concat([...outer].reverse()), 0, 0, ink, "none"));
+        }
+    }
+
+    /** The falling water: bare silk between edges that fade and break up as it falls */
+    private addWater(left: Point[], right: Point[]): void {
+        const steps = left.length - 1;
+
         this.add(
             new Element(left.concat([...right].reverse()), 0, 0, "white", "none")
         );
@@ -60,7 +96,7 @@ export default class Waterfall extends Structure {
         for (let p = 0; p < pieces; p++) {
             const from = Math.floor((steps * p) / pieces);
             const to = Math.floor((steps * (p + 1)) / pieces) - (p > 0 ? 1 : 0);
-            const ink = `rgba(90,90,90,${(0.5 - p * 0.11).toFixed(2)})`;
+            const ink = `rgba(80,80,80,${(0.6 - p * 0.12).toFixed(2)})`;
 
             for (const edge of [left, right]) {
                 if (p > 0 && PRNG.random() < 0.3) continue;
@@ -87,8 +123,6 @@ export default class Waterfall extends Structure {
                 this.add(new Stroke(strand, water, water, 0.6, 0.5));
             }
         }
-
-        return { left, right };
     }
 
     /** The gully the water comes from: two faint strokes converging up the slope */

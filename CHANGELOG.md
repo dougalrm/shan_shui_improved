@@ -288,7 +288,7 @@ What `PillarLayer` now does with them:
 - **Downloads:** exports include the wash.
 
 ### 17. Grounded bridges, waterfalls set into the rock
-*(see git log: "Ground the bridges")*
+*`74313fe`*
 
 - **Bridges:**
   - **The bug:** a bridge could join hills in different depth rows, sitting at their average height, so it floated above one hill and below the other.

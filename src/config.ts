@@ -146,6 +146,7 @@ export const config = {
             boat: 2,
             water: 3,
             middleMountain: 4,
+            clouds: 4.5,
             bottomMountain: 5,
             bridge: 5.5,
             inscription: 6,
@@ -158,6 +159,16 @@ export const config = {
         intensity: {
             /** How quickly the landscape moves between quiet stretches and massifs (per unit) */
             frequency: 0.0004,
+        },
+        clouds: {
+            /** Chance per 200 units, where the landscape is at least `intensity` built up */
+            chance: 0.14,
+            intensity: 0.5,
+            /** At most this many bands per chunk */
+            perChunk: 2,
+            y: { min: 260, max: 470 },
+            width: { min: 500, max: 1100 },
+            height: { min: 40, max: 80 },
         },
         bridge: {
             /** Gaps between foreground hills a bridge can span */

@@ -142,4 +142,10 @@ export const inkDefs = (): string => `
         <stop offset="0.55" style="stop-color:var(--silk);stop-opacity:0.8"/>
         <stop offset="0.8" style="stop-color:var(--silk);stop-opacity:0.35"/>
         <stop offset="1" style="stop-color:var(--silk);stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="cloud" cx="0.5" cy="0.55" r="0.5">
+        <stop offset="0" style="stop-color:var(--silk);stop-opacity:0.95"/>
+        <stop offset="0.5" style="stop-color:var(--silk);stop-opacity:0.85"/>
+        <stop offset="0.8" style="stop-color:var(--silk);stop-opacity:0.4"/>
+        <stop offset="1" style="stop-color:var(--silk);stop-opacity:0"/>
     </radialGradient>`;

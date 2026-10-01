@@ -10,4 +10,5 @@ export type LayerType =
     | "water"
     | "inscription"
     | "birds"
-    | "bridge";
+    | "bridge"
+    | "clouds";

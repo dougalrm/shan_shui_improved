@@ -122,6 +122,11 @@ input.InputSeed {
         transform-origin: 0 0;
     }
 
+    /* Cloud bands drift slowly back and forth (a compositor animation, so it costs nothing) */
+    & svg.Layer.is-clouds {
+        animation: drift 90s ease-in-out infinite alternate;
+    }
+
     /* One per layer of the picture, stacked in painting order. The size doesn't matter:
        user units are CSS pixels and everything outside the box is still drawn. */
     & svg.Layer {
@@ -442,6 +447,21 @@ div#Shortcuts {
 
 body.darkmode div#Shortcuts .Panel {
     filter: invert(1) sepia(1);
+}
+
+@keyframes drift {
+    from {
+        transform: translateX(-45px);
+    }
+    to {
+        transform: translateX(45px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #Canvas svg.Layer.is-clouds {
+        animation: none;
+    }
 }
 
 @keyframes infinityLoop {

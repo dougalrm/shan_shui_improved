@@ -12,6 +12,7 @@ import Designer from "./Designer";
 import InscriptionLayer from "./layers/InscriptionLayer";
 import BirdsLayer from "./layers/BirdsLayer";
 import BridgeLayer from "./layers/BridgeLayer";
+import CloudLayer from "./layers/CloudLayer";
 import { withInkStrength } from "../utils/ink";
 
 /**
@@ -85,6 +86,9 @@ export default class Frame {
         }
         if (tag === "bridge") {
             layer = new BridgeLayer(x, y, width);
+        }
+        if (tag === "clouds") {
+            layer = new CloudLayer(x, y, width, height);
         }
         if (tag === "boat") {
             const flip = PRNG.randomChoice([true, false]);

@@ -54,6 +54,15 @@ const BRIDGE_GAP_MIN = config.designer.bridge.gap.min;
 const BRIDGE_GAP_MAX = config.designer.bridge.gap.max;
 const BRIDGE_MAX_DROP = config.designer.bridge.maxDrop;
 const BRIDGE_CHANCE = config.designer.bridge.chance;
+const CLOUD_CHANCE = config.designer.clouds.chance;
+const CLOUD_INTENSITY = config.designer.clouds.intensity;
+const CLOUD_PER_CHUNK = config.designer.clouds.perChunk;
+const CLOUD_Y_MIN = config.designer.clouds.y.min;
+const CLOUD_Y_MAX = config.designer.clouds.y.max;
+const CLOUD_WIDTH_MIN = config.designer.clouds.width.min;
+const CLOUD_WIDTH_MAX = config.designer.clouds.width.max;
+const CLOUD_HEIGHT_MIN = config.designer.clouds.height.min;
+const CLOUD_HEIGHT_MAX = config.designer.clouds.height.max;
 const BIRDS_CHANCE = config.designer.birds.chance;
 const BIRDS_Y_MIN = config.designer.birds.y.min;
 const BIRDS_Y_MAX = config.designer.birds.y.max;
@@ -478,6 +487,24 @@ export default class Designer {
                     break;
                 }
             }
+        }
+
+        // Bands of cloud lying across the massifs at mid-height. Last, so adding them
+        // doesn't change anything placed before.
+        let bands = 0;
+        for (let x = range.start; x < range.end && bands < CLOUD_PER_CHUNK; x += 200) {
+            if (intensity(x) < CLOUD_INTENSITY || PRNG.random() > CLOUD_CHANCE) continue;
+
+            this.plan.push(
+                new SketchLayer(
+                    "clouds",
+                    x,
+                    PRNG.random(CLOUD_Y_MIN, CLOUD_Y_MAX),
+                    PRNG.random(CLOUD_WIDTH_MIN, CLOUD_WIDTH_MAX),
+                    PRNG.random(CLOUD_HEIGHT_MIN, CLOUD_HEIGHT_MAX)
+                )
+            );
+            bands++;
         }
     }
 }

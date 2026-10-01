@@ -120,7 +120,13 @@ export const ScrollableCanvas = ({
                 // Each layer is its own <svg>, so Chrome only repaints the layer that changed.
                 // Inside one big <svg> any change repainted every element of the picture.
                 const created = document.createElementNS(SVG_NS, "svg");
-                created.classList.add("Layer");
+                created.classList.add("Layer", `is-${tag}`);
+                if (tag === "clouds") {
+                    // Each band drifts at its own pace, from its own point in the cycle
+                    const hash = Array.from(key).reduce((h, c) => h * 31 + c.charCodeAt(0), 7);
+                    created.style.animationDuration = `${70 + (Math.abs(hash) % 60)}s`;
+                    created.style.animationDelay = `-${Math.abs(hash >> 3) % 60}s`;
+                }
                 created.id = `${key}-${tag}`;
                 picture.insertBefore(created, next);
                 nodes.set(key, created);

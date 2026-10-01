@@ -15,6 +15,8 @@ import BirdsLayer from "./layers/BirdsLayer";
 import BridgeLayer from "./layers/BridgeLayer";
 import CloudLayer from "./layers/CloudLayer";
 import BankLayer from "./layers/BankLayer";
+import FarShoreLayer from "./layers/FarShoreLayer";
+import SandbarLayer from "./layers/SandbarLayer";
 import { withInkStrength } from "../utils/ink";
 
 /**
@@ -104,6 +106,12 @@ export default class Frame {
         }
         if (tag === "bank") {
             layer = new BankLayer(x, width);
+        }
+        if (tag === "farShore") {
+            layer = new FarShoreLayer(x, width);
+        }
+        if (tag === "sandbar") {
+            layer = new SandbarLayer(x, y, width);
         }
         if (tag === "boat") {
             const flip = PRNG.randomChoice([true, false]);

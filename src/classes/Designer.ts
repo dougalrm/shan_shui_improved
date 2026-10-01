@@ -16,6 +16,11 @@ const BACKGROUND_MOUNTAIN_YLOCATION_MAX =
     config.designer.backgroundMountain.yLocation.max;
 const BOAT_PROBABILITY = config.designer.boat.probability;
 const BOATS_PER_CHUNK = config.designer.boat.perChunk;
+const SANDBAR_CHANCE = config.designer.sandbar.chance;
+const SANDBAR_Y_MIN = config.designer.sandbar.y.min;
+const SANDBAR_Y_MAX = config.designer.sandbar.y.max;
+const SANDBAR_WIDTH_MIN = config.designer.sandbar.width.min;
+const SANDBAR_WIDTH_MAX = config.designer.sandbar.width.max;
 const BOAT_WIDTH = config.designer.boat.width;
 const BOAT_Y_MAX = config.designer.boat.y.max;
 const BOAT_Y_MIN = config.designer.boat.y.min;
@@ -195,6 +200,13 @@ export default class Designer {
         const all = [...this.neighbours, ...this.plan, ...this.rightNeighbours];
 
         return all.every((layer) => {
+            if (layer.tag === "sandbar" && layer !== boat) {
+                return (
+                    boat.x + boat.width < layer.x - margin ||
+                    boat.x > layer.x + layer.width + margin ||
+                    Math.abs(boat.y - layer.y) > 25
+                );
+            }
             if (layer.tag !== "middleMountain" && layer.tag !== "bottomMountain") {
                 return true;
             }
@@ -458,6 +470,27 @@ export default class Designer {
             }
         });
 
+        // A sandbar now and then on the open water of the quiet stretches. Before the boats,
+        // which keep off it
+        const quiet = 1 - intensity(range.start + range.length / 2);
+        for (let attempt = 0; attempt < 2; attempt++) {
+            if (PRNG.random() > SANDBAR_CHANCE * (0.3 + 0.7 * quiet)) continue;
+            const sandbar = new SketchLayer(
+                "sandbar",
+                PRNG.random(range.start, range.end - SANDBAR_WIDTH_MAX * 0.5),
+                PRNG.random(SANDBAR_Y_MIN, SANDBAR_Y_MAX),
+                PRNG.random(SANDBAR_WIDTH_MIN, SANDBAR_WIDTH_MAX)
+            );
+            const clearOfOthers = this.plan.every(
+                (layer) =>
+                    layer.tag !== "sandbar" ||
+                    Math.abs(layer.y - sandbar.y) > 60 ||
+                    sandbar.x > layer.x + layer.width + 40 ||
+                    sandbar.x + sandbar.width < layer.x - 40
+            );
+            if (clearOfOthers && this.isOnOpenWater(sandbar)) this.plan.push(sandbar);
+        }
+
         let boats = 0;
         // Generate Boats: mostly on the open water of the quiet stretches
         for (let x = range.start; x < range.end; x += X_STEP) {
@@ -518,6 +551,8 @@ export default class Designer {
         // The near bank along the front of the whole stretch (it draws its own shoreline,
         // seamless across chunks)
         this.plan.push(new SketchLayer("bank", range.start, 0, range.length));
+        // And the far shore along the horizon
+        this.plan.push(new SketchLayer("farShore", range.start, 0, range.length));
 
         // Bands of cloud lying across the massifs at mid-height. Last, so adding them
         // doesn't change anything placed before.

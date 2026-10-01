@@ -12,4 +12,6 @@ export type LayerType =
     | "birds"
     | "bridge"
     | "clouds"
-    | "bank";
+    | "bank"
+    | "farShore"
+    | "sandbar";

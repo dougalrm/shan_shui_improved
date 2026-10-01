@@ -398,6 +398,16 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
   - **The groves:** clumps of small trees and shrubs now grow along it, mixing pines, conifers and low bushes.
   - **Their layout:** clumps are tightly gathered, with irregular open stretches between them, and none in an inlet. Within a clump, nearer trees sit lower on the bank and are larger and darker; ones towards the water are smaller and paler. Now and then a taller tree stands out.
 
+### 27. A far shore and sandbars
+*(see git log: "A far shore and sandbars")*
+
+- **The problem:** past the occasional distant mountain the lake opened into wide, empty water.
+- **Far shore:** a new "farShore" layer (`FarShoreLayer`) adds low, pale strips of distant land along the horizon, between and in front of the distant mountains. They roll into low hills with smaller bumps and carry tiny dots of far-off trees. The shore comes and goes rather than running on, covering about 60% of the horizon (`config.layers.farShore.cover`). Like the near bank, it is a smooth function of position, so it is seamless and the same for a seed.
+- **Sandbars:** a new "sandbar" layer (`SandbarLayer`) adds long, low spits of sand (平沙) with reeds, lying on the open water.
+  - **Placement:** each chunk gets two attempts, more likely in quiet stretches, kept clear of mountains and of each other.
+  - **Frequency:** 7–13 per 30 chunks.
+  - **Boats** keep off them.
+
 ---
 
 ## Known limits and ideas not yet built

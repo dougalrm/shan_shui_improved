@@ -94,6 +94,12 @@ export const config = {
                 colorNoAlfa: "rgba(100, 100, 100,",
             },
         },
+        farShore: {
+            /** The far shore's waterline (the distant mountains stand on 230-280) */
+            horizon: 272,
+            /** Roughly the share of the horizon that has far land along it (0-1) */
+            cover: 0.6,
+        },
         bank: {
             /** Where the near shore runs, on average (the world is 900 tall) */
             shore: 800,
@@ -149,6 +155,8 @@ export const config = {
         /** order in which the layers should be render */
         tagOrder: {
             backgroundMountain: 1,
+            farShore: 1.5,
+            sandbar: 3.5,
             // Boats only go on open water, so they can be drawn after the mist and cloud
             // bands (which would veil them) without ever overlapping a mountain
             boat: 4.6,
@@ -170,6 +178,12 @@ export const config = {
         intensity: {
             /** How quickly the landscape moves between quiet stretches and massifs (per unit) */
             frequency: 0.0004,
+        },
+        sandbar: {
+            /** Chance that a chunk has a sandbar, scaled down where the landscape is built up */
+            chance: 0.7,
+            y: { min: 360, max: 640 },
+            width: { min: 220, max: 560 },
         },
         clouds: {
             /** Chance per 200 units, where the landscape is at least `intensity` built up */

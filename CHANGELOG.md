@@ -399,7 +399,7 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
   - **Their layout:** clumps are tightly gathered, with irregular open stretches between them, and none in an inlet. Within a clump, nearer trees sit lower on the bank and are larger and darker; ones towards the water are smaller and paler. Now and then a taller tree stands out.
 
 ### 27. A far shore and sandbars
-*(see git log: "A far shore and sandbars")*
+*`98aca4c`*
 
 - **The problem:** past the occasional distant mountain the lake opened into wide, empty water.
 - **Far shore:** a new "farShore" layer (`FarShoreLayer`) adds low, pale strips of distant land along the horizon, between and in front of the distant mountains. They roll into low hills with smaller bumps and carry tiny dots of far-off trees. The shore comes and goes rather than running on, covering about 60% of the horizon (`config.layers.farShore.cover`). Like the near bank, it is a smooth function of position, so it is seamless and the same for a seed.

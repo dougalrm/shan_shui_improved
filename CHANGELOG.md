@@ -279,7 +279,7 @@ What `PillarLayer` now does with them:
 - **Rain:** it was being drawn, but it was too fast and faint to see in motion. It now falls at about half the speed and nearly twice as dark, with longer, thicker drops.
 
 ### 16. Open water wash
-*(see git log: "Open water")*
+*`269ba0a`*
 
 - **The problem:** sky and water were both bare silk, so the water blended into the paper everywhere except winter.
 - **The wash:** a pale wash now covers the water, from the far shore down. The far shore is the line the distant mountains stand on, about 230–280 units down. The wash fades in over that band so the uneven shore has no hard edge, and it is a little deeper towards the far shore.

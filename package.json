@@ -17,7 +17,8 @@
         "check:browser": "node scripts/browser-check.mjs",
         "stats": "node scripts/stats.mjs",
         "shots": "node scripts/shots.mjs",
-        "perf": "node scripts/perf.mjs"
+        "perf": "node scripts/perf.mjs",
+        "soak": "node scripts/soak.mjs"
     },
     "eslintConfig": {
         "extends": [

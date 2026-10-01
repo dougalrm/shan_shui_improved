@@ -9,6 +9,7 @@ Scripts for working on the painting. They need Node 22 or later. The browser one
 | `npm run check:browser` | Chrome, `npm start` | Checks that the painting in the browser is identical at two window sizes, scrolled two different ways. |
 | `npm run stats` | Node | Counts how often each thing is placed over 30 chunks (`--chunks`, `--seed`, `--style`, `--season`, `--weather`). |
 | `npm run shots` | Chrome, `npm start` | Saves screenshots along the scroll to `shots/`. You can pass a query (`npm run shots -- "seed=9&style=pillars" --views 8 --size 1280x720`). |
+| `npm run soak` | Chrome, `npm start` | Scrolls 120 screens (`--views`) and reports the page's heap and DOM size every 20, plus how long the first layer takes to appear. The heap should stay flat. |
 | `npm run perf` | Chrome, `npm start` | Opens a real Chrome window and traces 10 s of auto-scroll. Reports fps, late frames and long tasks. Keep the window visible while it runs. |
 
 ## Workflow

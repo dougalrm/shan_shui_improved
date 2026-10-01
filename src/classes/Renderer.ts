@@ -14,6 +14,9 @@ import { getPaintingOptions } from "../utils/style";
 
 const TAG_ORDER = config.renderer.tagOrder;
 const CHUNK_WIDTH = config.world.chunkWidth;
+/** Chunks kept behind the visible ones, so scrolling back a little is instant. Older ones are
+ *  forgotten: they are about 1.5 MB of markup each, and a chunk is painted the same every time */
+const KEEP_BEHIND = 4;
 
 /** A layer that was rendered to SVG markup, identified by a stable key */
 export interface RenderedLayer {
@@ -102,6 +105,11 @@ export default class Renderer {
             if (!this.frames.has(index)) {
                 this.frames.set(index, await this.createChunk(index));
             }
+        }
+
+        // Forget the chunks far behind, or the picture's memory only ever grows
+        for (const index of this.frames.keys()) {
+            if (index < first - KEEP_BEHIND) this.frames.delete(index);
         }
 
         // Collect of visible layers

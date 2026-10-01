@@ -489,7 +489,7 @@ There used to be one boat: a skiff with a crouching fisherman. Now there are fou
 - **Effect:** the near distance now has depth, a classic way to push the landscape back.
 
 ### 32. Snow on the branches, fog and dusk
-*(see git log: "Snow on the branches, ?weather=fog and ?time=dusk")*
+*`d89d382`*
 
 - **Snow on the branches:** in winter, snow now lies on the trees as ink painters paint it, by leaving it unpainted. A new `utils/snow.ts` helps with this:
   - **Leaves and needles:** the pines and conifers on the mountains and the bank (`Tree01`, `Tree03`) get a lid of bare silk on each leaf. It is thickest in the middle and thins to nothing at the ends, so the dark undersides still show (`snowCap`).

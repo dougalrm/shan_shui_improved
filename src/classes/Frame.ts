@@ -11,6 +11,7 @@ import PillarLayer from "./layers/PillarLayer";
 import Designer from "./Designer";
 import InscriptionLayer from "./layers/InscriptionLayer";
 import BirdsLayer from "./layers/BirdsLayer";
+import BridgeLayer from "./layers/BridgeLayer";
 import { withInkStrength } from "../utils/ink";
 
 /**
@@ -81,6 +82,9 @@ export default class Frame {
         }
         if (tag === "birds") {
             layer = new BirdsLayer(x, y);
+        }
+        if (tag === "bridge") {
+            layer = new BridgeLayer(x, y, width);
         }
         if (tag === "boat") {
             const flip = PRNG.randomChoice([true, false]);

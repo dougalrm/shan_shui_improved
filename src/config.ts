@@ -147,6 +147,7 @@ export const config = {
             water: 3,
             middleMountain: 4,
             bottomMountain: 5,
+            bridge: 5.5,
             inscription: 6,
             birds: 7,
         },
@@ -157,6 +158,14 @@ export const config = {
         intensity: {
             /** How quickly the landscape moves between quiet stretches and massifs (per unit) */
             frequency: 0.0004,
+        },
+        bridge: {
+            /** Gaps between foreground hills a bridge can span */
+            gap: { min: 40, max: 260 },
+            /** How different the two hills' heights may be */
+            maxDrop: 55,
+            /** Chance that a suitable gap gets a bridge */
+            chance: 0.85,
         },
         birds: {
             /** Chance that a chunk has a flock of geese somewhere in its sky */

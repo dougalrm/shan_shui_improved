@@ -9,4 +9,5 @@ export type LayerType =
     | "boat"
     | "water"
     | "inscription"
-    | "birds";
+    | "birds"
+    | "bridge";

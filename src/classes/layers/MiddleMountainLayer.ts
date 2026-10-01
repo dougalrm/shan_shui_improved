@@ -16,6 +16,7 @@ import Tree02 from "../structures/Tree02";
 import Tree03 from "../structures/Tree03";
 import Tower from "../structures/Tower";
 import Waterfall from "../structures/Waterfall";
+import Path from "../structures/Path";
 import { footMist } from "../structures/Mist";
 import { config } from "../../config";
 import { distance } from "../../utils/polytools";
@@ -337,6 +338,21 @@ export default class MiddleMountainLayer extends Layer {
             () => true,
             this
         );
+
+        // PATH zigzagging up the face, through the nested ridges from the foot upwards
+        if (height > 200 && PRNG.random() < 0.3) {
+            let j = Math.floor(PRNG.random(elementDetails * 0.3, elementDetails * 0.7));
+            let direction = PRNG.randomSign();
+            const turns: Point[] = [];
+
+            for (let i = elementNumber - 1; i >= 2; i--) {
+                const point = elementArray[i][j];
+                turns.push(new Point(point.x + xOffset, point.y + yOffset));
+                j = Math.max(2, Math.min(elementDetails - 3, j + direction * 3));
+                direction = -direction;
+            }
+            this.add(new Path(turns));
+        }
 
         // WATERFALL down the face: nearly always on a host peak, now and then elsewhere
         const isHostPeak = height >= HOST_PEAK_HEIGHT_MIN;

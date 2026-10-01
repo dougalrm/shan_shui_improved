@@ -50,6 +50,10 @@ const INSCRIPTION_THRESHOLD = config.designer.inscription.threshold;
 const INSCRIPTION_Y = config.designer.inscription.y;
 const CHUNK_WIDTH = config.world.chunkWidth;
 const BLEND_THRESHOLD = config.layers.pillar.blendThreshold;
+const BRIDGE_GAP_MIN = config.designer.bridge.gap.min;
+const BRIDGE_GAP_MAX = config.designer.bridge.gap.max;
+const BRIDGE_MAX_DROP = config.designer.bridge.maxDrop;
+const BRIDGE_CHANCE = config.designer.bridge.chance;
 const BIRDS_CHANCE = config.designer.birds.chance;
 const BIRDS_Y_MIN = config.designer.birds.y.min;
 const BIRDS_Y_MAX = config.designer.birds.y.max;
@@ -378,6 +382,28 @@ export default class Designer {
                         this.plan.push(bottomMountain);
                     }
                 }
+            }
+        }
+
+        // Bridges between neighbouring foreground hills of about the same height
+        const hills = this.plan
+            .filter((layer) => layer.tag === "bottomMountain")
+            .sort((a, b) => a.x - b.x);
+        for (let i = 0; i < hills.length - 1; i++) {
+            const [near, far] = [hills[i], hills[i + 1]];
+            const from = near.x + (near.width / 2) * 0.85;
+            const to = far.x - (far.width / 2) * 0.85;
+            const gap = to - from;
+
+            if (
+                gap > BRIDGE_GAP_MIN &&
+                gap < BRIDGE_GAP_MAX &&
+                Math.abs(near.y - far.y) < BRIDGE_MAX_DROP &&
+                PRNG.random() < BRIDGE_CHANCE
+            ) {
+                this.plan.push(
+                    new SketchLayer("bridge", from, (near.y + far.y) / 2 - 8, gap)
+                );
             }
         }
 

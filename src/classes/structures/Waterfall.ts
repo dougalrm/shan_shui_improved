@@ -4,65 +4,38 @@ import Perlin from "../Perlin";
 import Point from "../Point";
 import Stroke from "../elements/Stroke";
 import Structure from "../Structure";
+import { expand } from "../../utils/utils";
 import MossDots from "./MossDots";
 
 /**
- * A waterfall (瀑布) set into the mountain the way ink painters do it: it emerges from a gully
- * between ridges (a faint V climbing above it), pours between dark boulders, is set into the
- * rock by short strokes down both banks, and falls as bare silk whose edges grow fainter and
- * more broken until it disappears into the mist at the mountain's foot.
+ * A waterfall (瀑布) cascading down a mountain slope, set in the way ink painters do it: it
+ * follows its course down the ground, from dark boulders where it rises, as bare silk widening
+ * as it goes, spilling over small ledges, framed by patches of darker rock on both banks, its
+ * edges growing fainter and more broken until it disappears into the mist at the foot.
  */
 export default class Waterfall extends Structure {
     /**
-     * @param {number} x - Centre of the top of the fall
-     * @param {number} top - Where it starts
-     * @param {number} bottom - Where it ends (in the mist at the foot)
-     * @param {number} width - Width at the top; it widens a little as it falls
-     * @param {number} ridge - Height of the ridge above it: the gully must stay below it
+     * @param {Point[]} course - The line the water runs down, from its source to the foot
+     * @param {number} width - Width where it starts; it widens as it falls
      */
-    constructor(
-        x: number,
-        top: number,
-        bottom: number,
-        width: number,
-        ridge: number
-    ) {
+    constructor(course: Point[], width: number) {
         super();
 
-        // The dark rock on either side goes down first; the water is bare silk over it
-        const { left, right } = this.waterEdges(x, top, bottom, width);
+        // The ribbon of water either side of its course, widening as it goes
+        const sides = expand(course, (t) => (width / 2) * (0.5 + t));
+        const average = (side: Point[]) =>
+            side.reduce((sum, point) => sum + point.x, 0) / side.length;
+        // expand gives the two sides in either order: make sure left is the left bank
+        const [left, right] =
+            average(sides[0]) <= average(sides[1]) ? sides : [sides[1], sides[0]];
+
+        // The dark rock either side goes down first; the water is bare silk over it
         this.addRockWash(left, -1);
         this.addRockWash(right, 1);
-        this.addWater(left, right);
-        this.addGully(x, top, width, Math.min((bottom - top) * 0.35, top - ridge - 3));
+        this.addWater(course, left, right);
+        this.addLedges(left, right);
         this.addBanks(left, right);
         this.addBoulders(left[0], right[0]);
-    }
-
-    /** The two edges of the falling water, swaying a little and spreading as it falls */
-    private waterEdges(
-        x: number,
-        top: number,
-        bottom: number,
-        width: number
-    ): { left: Point[]; right: Point[] } {
-        const steps = Math.max(8, Math.floor((bottom - top) / 6));
-        const seed = PRNG.random(0, 100);
-        const left: Point[] = [];
-        const right: Point[] = [];
-
-        for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            const y = top + t * (bottom - top);
-            const sway = (Perlin.noise(t * 2.5, seed) - 0.5) * width * 1.6;
-            // Narrow where it pours from the gully, spreading as it falls
-            const half = (width / 2) * (0.6 + t * 1.1);
-
-            left.push(new Point(x + sway - half, y));
-            right.push(new Point(x + sway + half, y));
-        }
-
-        return { left, right };
     }
 
     /**
@@ -102,7 +75,7 @@ export default class Waterfall extends Structure {
     }
 
     /** The falling water: bare silk between edges that fade and break up as it falls */
-    private addWater(left: Point[], right: Point[]): void {
+    private addWater(course: Point[], left: Point[], right: Point[]): void {
         const steps = left.length - 1;
 
         this.add(
@@ -125,16 +98,21 @@ export default class Waterfall extends Structure {
 
         // A few faint lines of falling water
         const strands = Math.floor(PRNG.random(2, 4.99));
-        for (let n = 0; n < strands; n++) {
+        for (let n = 0; n < strands && course.length > 2; n++) {
             const offset = PRNG.random(-0.5, 0.5);
             const start = Math.floor(PRNG.random(0, steps * 0.3));
             const end = Math.floor(PRNG.random(steps * 0.4, steps * 0.8));
             const strand: Point[] = [];
 
+            // Following the course, a fixed share of the way across the stream
+            const across = 0.5 + offset / 2;
             for (let i = start; i <= end; i++) {
-                const middle = (left[i].x + right[i].x) / 2;
-                const half = (right[i].x - left[i].x) / 2;
-                strand.push(new Point(middle + offset * half, left[i].y));
+                strand.push(
+                    new Point(
+                        left[i].x + (right[i].x - left[i].x) * across,
+                        left[i].y + (right[i].y - left[i].y) * across
+                    )
+                );
             }
             if (strand.length > 2) {
                 const water = "rgba(100,100,100,0.18)";
@@ -143,23 +121,21 @@ export default class Waterfall extends Structure {
         }
     }
 
-    /**
-     * The gully the water comes from: two faint strokes converging up the slope, stopping
-     * short of the ridge
-     */
-    private addGully(x: number, top: number, width: number, reach: number): void {
-        if (reach < 8) return;
-        const ink = "rgba(100,100,100,0.32)";
+    /** Small ledges the water spills over on its way down: a dark lip across the stream */
+    private addLedges(left: Point[], right: Point[]): void {
+        const count = Math.floor(PRNG.random(2, 4.99));
 
-        for (const side of [-1, 1]) {
-            const line = [0, 0.33, 0.66, 1].map(
-                (t) =>
-                    new Point(
-                        x + side * width * (1.3 - t * 1.0) + PRNG.random(-1.5, 1.5),
-                        top - t * reach
-                    )
-            );
-            this.add(new Stroke(line, ink, ink, 1.1, 0.6));
+        for (let n = 0; n < count; n++) {
+            const i = Math.floor(PRNG.random(0.15, 0.85) * left.length);
+            const [l, r] = [left[i], right[i]];
+            // A gently rounded lip of rock, not a chevron
+            const lip = [
+                new Point(l.x - 4, l.y + 1),
+                new Point((l.x + r.x) / 2, (l.y + r.y) / 2 - 1.5),
+                new Point(r.x + 4, r.y + 1),
+            ];
+            const ink = `rgba(60,60,60,${PRNG.random(0.3, 0.45).toFixed(2)})`;
+            this.add(new Stroke(lip, ink, ink, 1.4, 0.4));
         }
     }
 

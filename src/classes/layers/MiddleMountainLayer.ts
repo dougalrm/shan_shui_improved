@@ -45,6 +45,22 @@ const HOST_PEAK_HEIGHT_MIN = config.designer.hostPeak.height.min;
  *
  * @extends Layer
  */
+/** Round off a course of points (Chaikin's corner cutting), so it meanders instead of zigzagging */
+const smooth = (points: Point[], rounds: number = 2): Point[] => {
+    let result = points;
+    for (let r = 0; r < rounds; r++) {
+        const next = [result[0]];
+        for (let i = 0; i < result.length - 1; i++) {
+            const [a, b] = [result[i], result[i + 1]];
+            next.push(new Point(a.x * 0.75 + b.x * 0.25, a.y * 0.75 + b.y * 0.25));
+            next.push(new Point(a.x * 0.25 + b.x * 0.75, a.y * 0.25 + b.y * 0.75));
+        }
+        next.push(result[result.length - 1]);
+        result = next;
+    }
+    return result;
+};
+
 export default class MiddleMountainLayer extends Layer {
     /**
      * Constructor for generating a mountainous landscape with various elements.
@@ -354,41 +370,56 @@ export default class MiddleMountainLayer extends Layer {
             this.add(new Path(turns));
         }
 
-        // WATERFALL down the face: nearly always on a host peak, often on other tall mountains.
-        // It starts in a saddle of the ridge (a dip between peaks), where water would gather,
-        // high enough above the foot for a long fall.
+        // WATERFALL: nearly always on a host peak, often on other tall mountains. Water gathers
+        // in a saddle of the ridge (a dip between peaks) - or, without one, emerges from a cleft
+        // below the high point - and runs down the slope. Its course is traced down through the
+        // mountain's nested ridges, drifting a little at each, so it follows the ground as a
+        // cascade instead of dropping straight like water off a cliff.
         const isHostPeak = height >= HOST_PEAK_HEIGHT_MIN;
         if (height > 250 && PRNG.random() < (isHostPeak ? 0.9 : 0.45)) {
             const ridge = elementArray[0];
             const foot = yOffset - height * 0.05;
-            let saddle: Point | undefined;
+            let sourceJ = -1;
 
             for (let j = Math.floor(elementDetails * 0.2); j < elementDetails * 0.8; j++) {
                 const point = ridge[j];
                 const isDip = point.y > ridge[j - 1].y && point.y >= ridge[j + 1].y;
                 const highEnough = foot - (point.y + yOffset) > height * 0.4;
-                if (isDip && highEnough && (!saddle || point.y > saddle.y)) saddle = point;
-            }
-            // Water doesn't pour off a summit. Without a saddle it emerges from a cleft well
-            // down the face, below the high point
-            let source = saddle;
-            let drop = height * 0.08;
-            if (!source) {
-                source = ridge
-                    .slice(Math.floor(elementDetails * 0.3), Math.floor(elementDetails * 0.7))
-                    .reduce((top, point) => (point.y < top.y ? point : top));
-                drop = height * 0.28;
+                if (isDip && highEnough && (sourceJ < 0 || point.y > ridge[sourceJ].y)) {
+                    sourceJ = j;
+                }
             }
 
-            const top = source.y + yOffset + drop;
-            if (foot - top > height * 0.3) {
+            let firstRing = 1;
+            if (sourceJ < 0) {
+                // No saddle: start two ridges down, below the high point of the middle stretch
+                firstRing = 3;
+                sourceJ = Math.floor(elementDetails * 0.3);
+                for (let j = sourceJ; j < elementDetails * 0.7; j++) {
+                    if (ridge[j].y < ridge[sourceJ].y) sourceJ = j;
+                }
+            }
+
+            const course: Point[] = [];
+            let j = sourceJ;
+            for (let i = firstRing; i < elementNumber; i++) {
+                const point = new Point(elementArray[i][j].x + xOffset, elementArray[i][j].y + yOffset);
+                // Water only runs downhill
+                if (!course.length || point.y > course[course.length - 1].y + 2) {
+                    course.push(point);
+                }
+                j = Math.max(2, Math.min(elementDetails - 3, j + Math.round(PRNG.random(-2.8, 2.8))));
+            }
+            const last = course[course.length - 1];
+            if (last && foot > last.y + 10) {
+                course.push(new Point(last.x + PRNG.random(-6, 6), foot));
+            }
+
+            if (course.length > 2 && course[course.length - 1].y - course[0].y > height * 0.3) {
                 this.add(
                     new Waterfall(
-                        source.x + xOffset,
-                        top,
-                        foot,
-                        PRNG.random(12, 18) * (isHostPeak ? 1.4 : 1),
-                        source.y + yOffset
+                        smooth(course),
+                        PRNG.random(10, 15) * (isHostPeak ? 1.3 : 1)
                     )
                 );
             }

@@ -42,7 +42,6 @@ bun-debug.log*
 *.swp
 
 # project-specific
-index.html
 src/config_.ts
 
 # screenshots from npm run shots

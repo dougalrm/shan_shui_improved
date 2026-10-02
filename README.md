@@ -7,7 +7,7 @@
 </div>
 <br>
 
-Discover the beauty of an ever-evolving Chinese landscape art. This project combines the elegance of procedural generation with the power of vector graphics to create a mesmerizing, infinite-scrolling journey.
+An endless, procedurally generated Chinese ink landscape that unrolls like a handscroll. This is an improved fork of [Megaemce/shan_shui](https://github.com/Megaemce/shan_shui): smooth scrolling, a pure-ink look, scenes, seasons, weather and a night mode. See the [CHANGELOG](CHANGELOG.md) for everything that changed.
 
 <img alt="Shan Shui example" src="./public/img/example.png" width="100%">
 
@@ -53,9 +53,9 @@ React, TypeScript and SVG. Nothing more! ✨
 
 ## ⚙️ Installation
 
-[Check it in online](https://shan-shui.vercel.app/) or locally:
-
 ```
+git clone https://github.com/dougalrm/shan_shui_improved.git
+cd shan_shui_improved
 bun install
 bun start
 ```
@@ -68,31 +68,19 @@ With npm instead: `npm install --legacy-peer-deps`, then `npm start`.
 
 ## 📖 Documentation
 
-[Check it in online](https://megaemce.github.io/shan_shui_docs/) or generate it locally with TypeDoc from Shan_Shui project.
+Generate the API docs locally with TypeDoc (the upstream docs at [megaemce.github.io/shan_shui_docs](https://megaemce.github.io/shan_shui_docs/) describe the original code).
 
 ```
 bun docs
 ```
 
-## 📜 Versions
+## 📜 Lineage
 
-This is the third iteration of this app:
+This is the fourth iteration of the app:
 
-1. Firstly created as a [monolithic JavaScript file](https://github.com/LingDong-/shan-shui-inf) by [Lingdong Huang](https://github.com/LingDong-)
-2. Then it was [rebuilt with React 17](https://github.com/RedContritio/shan_shui_inf) by [RedContritio](https://github.com/RedContritio) without changing the source code
-3. I have rebuilt it using React function components, employing an object-oriented programming approach. Additionally, I have addressed several bugs and incorporated various improvements for enhanced performance and readability:
+1. Created as a [monolithic JavaScript file](https://github.com/LingDong-/shan-shui-inf) by [Lingdong Huang](https://github.com/LingDong-)
+2. [Rebuilt with React 17](https://github.com/RedContritio/shan_shui_inf) by [RedContritio](https://github.com/RedContritio)
+3. [Rewritten with React function components, OOP, web workers and dark mode](https://github.com/Megaemce/shan_shui) by [Megaemce](https://github.com/Megaemce)
+4. This fork, taken from upstream at `312ea4e`, adds the smooth transform-based scroller, the pure-ink art direction, scenes and journey, seasons, weather and time of day, the settings panel, the checks in `scripts/`, and seeded output that is identical on any screen.
 
-    - Dark mode was added,
-    - Some of the most complex elements were simplified,
-    - Whole code was rewritten and commented using JSDoc,
-    - [Fastest way to work with array](https://annoyscript.vercel.app/posts/The%20fastest%20way%20to%20work%20with%20arrays/) was implemented wherever it was reasonable,
-    - Invisible objects are removed from the DOM for faster rendering and lower memory consumption,
-    - Designing and rendering is done via [web workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and [promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) for parallel computation, preventing [main thread blockages](https://web.dev/articles/optimize-long-tasks?utm_source=devtools).
-      <br>
-      <br>
-
-    | | [DCL](https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event) | [FCP](https://web.dev/articles/fcp) | [LCP](https://web.dev/articles/lcp) | Longest task |
-    | --- | :-: | :-: | :-: | :-: |
-    | Old  | 4.92s | 4.92s | 6.18s | 2.02s |
-    | New  |  0.19s | 0.25s | 0.25s | 0.23s |
-    | Diff | ⏬25x | ⏬19x | ⏬25x | ⏬8x |
+Released under the MIT licence; the original copyright notice is kept in [LICENSE](LICENSE).
